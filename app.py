@@ -198,8 +198,8 @@ selected_section = st.tabs([
     "📁 المسمى الوظيفي",
     "📁 التسكين علي الكادر",
     "📁 قرار 160",
-    "📁 ملفات معلم مساعد الدفعة 1",
-    "📁 ملفات معلم مساعد الدفعة 2",
+    "📁 معلم مساعد 1",
+    "📁 معلم مساعد 2",
     "📁 منصة الوزارة CPD"
 ])
 
@@ -332,11 +332,7 @@ with selected_section[0]:
 
     st.altair_chart(chart, use_container_width=True)
 
-# دالة لتحويل الداتا فريم إلى CSV للتحميل المباشر
-def convert_df_to_csv(df):
-    return df.to_csv(index=True).encode('utf-8-sig')
-
-# دالة عرض الأقسام التفصيلية داخل التبويبات
+# دالة عرض الأقسام التفصيلية داخل التبويبات بدون زر التحميل
 def render_section(title, df, tab_index):
     with selected_section[tab_index]:
         st.markdown(f'<p class="program-header">📁 {title}</p>', unsafe_allow_html=True)
@@ -350,15 +346,6 @@ def render_section(title, df, tab_index):
                 st.info(f"عدد النتائج المطابقة للبحث: {len(display_df)}")
             
             st.dataframe(display_df, use_container_width=True)
-            
-            csv_data = convert_df_to_csv(display_df)
-            st.download_button(
-                label=f"📥 تنزيل كشف {title}",
-                data=csv_data,
-                file_name=f"{title}.csv",
-                mime="text/csv",
-                key=f"download_{tab_index}"
-            )
         else:
             st.error(f"تعذر العثور على ملف الإكسل الخاص بـ '{title}'. تأكد من رفع الملف في المستودع.")
 
