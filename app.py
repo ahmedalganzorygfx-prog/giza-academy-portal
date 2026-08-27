@@ -37,7 +37,6 @@ st.markdown("""
     .card-number { font-size: 22px; font-weight: bold; }
     .program-header { font-size: 20px !important; font-weight: bold; color: #1e293b; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-top: 20px; margin-bottom: 15px; }
     .top-header { background-color: #1e293b; color: white; padding: 14px 15px; border-radius: 8px; text-align: center; font-size: 17px; font-weight: bold; margin-bottom: 20px; }
-    .nav-container { background-color: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
     .footer-container { text-align: center; padding: 15px; margin-top: 30px; border-top: 1px solid #e2e8f0; color: #475569; font-size: 14px; font-weight: bold; background-color: #f8fafc; border-radius: 8px; }
     </style>
 """, unsafe_allow_html=True)
@@ -57,7 +56,7 @@ def load_excel_file(filename):
             return None
     return None
 
-# تحميل الملفات الستة بالأسماء الجديدة المباشرة والمضمونة
+# تحميل الملفات الستة بالأسماء المبسطة المضمونة
 df_training = load_excel_file("training.xlsx")
 df_job = load_excel_file("job.xlsx")
 df_cader = load_excel_file("cader.xlsx")
@@ -73,23 +72,19 @@ c_reassign = len(df_reassign) if df_reassign is not None else 0
 c_batch1 = len(df_batch1) if df_batch1 is not None else 0
 c_batch2 = len(df_batch2) if df_batch2 is not None else 0
 
-# --- القائمة الأفقية العلوية للتنقل ---
-st.markdown('<div class="nav-container">', unsafe_allow_html=True)
-st.markdown("#### 🗂️ لوحة التنقل الرئيسية للبرامج والخدمات")
-selected_section = st.selectbox("اختر القسم المطلوب عرضه:", [
-    "🏠 الرئيسية والمؤشرات العامة والبحث الشامل",
-    "📁 معد البرامج التدريبية",
+# --- استخدام الـ Tabs الأفقية بدلاً من القائمة المنسدلة (Droplist) ---
+selected_section = st.tabs([
+    "🏠 الرئيسية والبحث الشامل",
+    "📁 معد البرامج",
     "📁 المسمى الوظيفي",
     "📁 التسكين علي الكادر",
-    "📁 إعادة التعيين (قرار 160)",
-    "📁 معلم مساعد الدفعة الأولى",
-    "📁 معلم مساعد الدفعة الثانية"
-], label_visibility="collapsed")
-st.markdown('</div>', unsafe_allow_html=True)
+    "📁 قرار 160",
+    "📁 معلم مساعد 1",
+    "📁 معلم مساعد 2"
+])
 
 # 1. شاشة الرئيسية والمؤشرات العامة والبحث الشامل
-if selected_section == "🏠 الرئيسية والمؤشرات العامة والبحث الشامل":
-    
+with selected_section[0]:
     st.markdown("### 🔎 البحث الشامل بالكود في كافة الملفات والبرامج")
     global_search_code = st.text_input("أدخل كود المعلم للبحث الفوري عنه في جميع الكشوفات:", placeholder="مثال: 3089097")
 
@@ -147,34 +142,29 @@ if selected_section == "🏠 الرئيسية والمؤشرات العامة و
 
     st.altair_chart(chart, use_container_width=True)
 
-# دالة عرض الأقسام التفصيلية
-def render_section(title, df):
-    st.markdown(f'<p class="program-header">📁 {title}</p>', unsafe_allow_html=True)
-    if df is not None:
-        st.metric(label=f"إجمالي السجلات في هذا الكشف", value=len(df))
-        search_query = st.text_input(f"🔍 بحث مخصص داخل كشف {title}:", key=f"search_{title}")
-        display_df = df
-        if search_query:
-            mask = df.astype(str).apply(lambda x: x.str.contains(search_query, case=False, na=False)).any(axis=1)
-            display_df = df[mask]
-            st.info(f"عدد النتائج المطابقة للبحث: {len(display_df)}")
-        st.dataframe(display_df, use_container_width=True)
-    else:
-        st.error(f"تعذر العثور على ملف الإكسل الخاص بـ '{title}'. تأكد من رفع الملف باسمه الصحيح في المستودع.")
+# دالة عرض الأقسام التفصيلية داخل التبويبات
+def render_section(title, df, tab_index):
+    with selected_section[tab_index]:
+        st.markdown(f'<p class="program-header">📁 {title}</p>', unsafe_allow_html=True)
+        if df is not None:
+            st.metric(label=f"إجمالي السجلات في هذا الكشف", value=len(df))
+            search_query = st.text_input(f"🔍 بحث مخصص داخل كشف {title}:", key=f"search_{title}")
+            display_df = df
+            if search_query:
+                mask = df.astype(str).apply(lambda x: x.str.contains(search_query, case=False, na=False)).any(axis=1)
+                display_df = df[mask]
+                st.info(f"عدد النتائج المطابقة للبحث: {len(display_df)}")
+            st.dataframe(display_df, use_container_width=True)
+        else:
+            st.error(f"تعذر العثور على ملف الإكسل الخاص بـ '{title}'. تأكد من رفع الملف في المستودع.")
 
-# توجيه الشاشات حسب الاختيار
-if selected_section == "📁 معد البرامج التدريبية":
-    render_section("معد البرامج التدريبية", df_training)
-elif selected_section == "📁 المسمى الوظيفي":
-    render_section("المسمى الوظيفي", df_job)
-elif selected_section == "📁 التسكين علي الكادر":
-    render_section("التسكين علي الكادر", df_cader)
-elif selected_section == "📁 إعادة التعيين (قرار 160)":
-    render_section("إعادة التعيين (قرار 160)", df_reassign)
-elif selected_section == "📁 معلم مساعد الدفعة الأولى":
-    render_section("معلم مساعد الدفعة الأولى", df_batch1)
-elif selected_section == "📁 معلم مساعد الدفعة الثانية":
-    render_section("معلم مساعد الدفعة الثانية", df_batch2)
+# عرض محتوى كل تبويب تفصيلي
+render_section("معد البرامج التدريبية", df_training, 1)
+render_section("المسمى الوظيفي", df_job, 2)
+render_section("التسكين علي الكادر", df_cader, 3)
+render_section("إعادة التعيين (قرار 160)", df_reassign, 4)
+render_section("معلم مساعد الدفعة الأولى", df_batch1, 5)
+render_section("معلم مساعد الدفعة الثانية", df_batch2, 6)
 
 # --- تذييل الصفحة (Footer) ---
 st.markdown("""
