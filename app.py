@@ -22,9 +22,6 @@ st.markdown("""
         direction: rtl !important;
         text-align: right !important;
     }
-    [data-testid="stSidebar"] {
-        display: none !important;
-    }
     [data-testid="collapsedControl"] {
         display: none !important;
     }
@@ -86,6 +83,20 @@ st.markdown("""
     .footer-container { text-align: center; padding: 15px; margin-top: 30px; border-top: 1px solid #e2e8f0; color: #475569; font-size: 14px; font-weight: bold; background-color: #f8fafc; border-radius: 8px; }
     </style>
 """, unsafe_allow_html=True)
+
+# --- لوحة تحكم الأدمن الجانبية (لتفعيل صلاحية التحميل) ---
+with st.sidebar:
+    st.markdown("### 🔐 لوحة تحكم المسؤول (الأدمن)")
+    admin_password_input = st.text_input("أدخل كلمة مرور الأدمن للتحميل:", type="password", placeholder="أدخل الرقم السري...")
+    
+    # يمكنك تغيير كلمة المرور هنا بالرمز الذي تريده
+    ADMIN_SECRET = "Giza2026"  
+    is_admin = (admin_password_input == ADMIN_SECRET)
+    
+    if is_admin:
+        st.success("✅ تم تفعيل صلاحيات الأدمن (التحميل متاح)")
+    else:
+        st.info("ℹ️ وضع الزائر (عرض البيانات فقط بدون تحميل)")
 
 # --- البحث عن ملف اللوجو بصيغ مختلفة ---
 found_logo_path = None
@@ -149,8 +160,8 @@ selected_section = st.tabs([
     "📁 المسمى الوظيفي",
     "📁 التسكين علي الكادر",
     "📁 قرار 160",
-    "📁 معلم مساعد الدفعة الاولي",
-    "📁 معلم مساعد الدفعة الثانية"
+    "📁 معلم مساعد 1",
+    "📁 معلم مساعد 2"
 ])
 
 # 1. شاشة الرئيسية والمؤشرات العامة والبحث الشامل
@@ -212,6 +223,10 @@ with selected_section[0]:
 
     st.altair_chart(chart, use_container_width=True)
 
+# دالة لتحويل الداتا فريم إلى CSV للتحميل المباشر
+def convert_df_to_csv(df):
+    return df.to_csv(index=True).encode('utf-8-sig')
+
 # دالة عرض الأقسام التفصيلية داخل التبويبات
 def render_section(title, df, tab_index):
     with selected_section[tab_index]:
@@ -224,7 +239,19 @@ def render_section(title, df, tab_index):
                 mask = df.astype(str).apply(lambda x: x.str.contains(search_query, case=False, na=False)).any(axis=1)
                 display_df = df[mask]
                 st.info(f"عدد النتائج المطابقة للبحث: {len(display_df)}")
+            
             st.dataframe(display_df, use_container_width=True)
+            
+            # 🔒 شرط إظهار زر التحميل للأدمن فقط
+            if is_admin:
+                csv_data = convert_df_to_csv(display_df)
+                st.download_button(
+                    label=f"📥 تنزيل كشف {title} (خاص بالأدمن)",
+                    data=csv_data,
+                    file_name=f"{title}.csv",
+                    mime="text/csv",
+                    key=f"download_{tab_index}"
+                )
         else:
             st.error(f"تعذر العثور على ملف الإكسل الخاص بـ '{title}'. تأكد من رفع الملف في المستودع.")
 
@@ -238,7 +265,7 @@ render_section("معلم مساعد الدفعة الثانية", df_batch2, 6)
 
 # --- تذييل الصفحة (Footer) ---
 st.markdown("""
-    <div class="footer-container">
-        تصميم وتنفيذ: <span style="color: #2563eb;">أحمد الجنزوري-مدير الفرع</span> 🌟
-    </div>
+    <footer-container style="text-align: center; padding: 15px; margin-top: 30px; border-top: 1px solid #e2e8f0; color: #475569; font-size: 14px; font-weight: bold; background-color: #f8fafc; border-radius: 8px;">
+        تصميم وتنفيذ: <span style="color: #2563eb;">أحمد الجنزوري</span> 🌟
+    </fooer-container>
 """, unsafe_allow_html=True)
