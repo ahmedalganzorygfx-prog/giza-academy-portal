@@ -268,7 +268,7 @@ with selected_section[0]:
     st.markdown("<br>", unsafe_allow_html=True)
 
     # تقسيم وتحليل بطاقات منصة الوزارة CPD بالتفصيل مع إضافة بطاقة الإجمالي العام في الأعلى
-    st.markdown("### 📊 النتيجة حتي 12-5-2026 CPD (2025/2026)")
+    st.markdown("### 📊 نتيجة منصة CPD حتي 12-5-2026 ")
     
     # بطاقة الإجمالي العام المجمعة
     st.markdown(f"""
