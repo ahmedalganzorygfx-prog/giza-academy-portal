@@ -77,7 +77,6 @@ st.markdown("""
     .metric-card-5 { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
     .metric-card-6 { background: linear-gradient(135deg, #cb356b 0%, #bd3f32 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
     
-    /* بطاقات تفصيلية لبرامج منصة الوزارة */
     .cpd-card-box { background: #1e293b; border: 1px solid #334155; padding: 15px; border-radius: 12px; color: white; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
     .cpd-total-box { background: linear-gradient(135deg, #0f172a 100%, #1e3a8a 0%); border: 2px solid #3b82f6; padding: 18px; border-radius: 14px; color: white; margin-bottom: 25px; box-shadow: 0 8px 16px rgba(0,0,0,0.3); }
     .cpd-title { font-size: 15px; font-weight: bold; color: #38bdf8; margin-bottom: 10px; border-bottom: 1px solid #475569; padding-bottom: 5px; }
@@ -90,6 +89,26 @@ st.markdown("""
     .program-header { font-size: 20px !important; font-weight: bold; color: #1e293b; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-top: 20px; margin-bottom: 15px; }
     </style>
 """, unsafe_allow_html=True)
+
+# --- نظام إخفاء أزرار الجدول للمستخدمين العاديين وإظهارها للأدمن فقط ---
+st.sidebar.markdown("### 🔐 لوحة التحكم وصلاحيات الأدمن")
+admin_password = st.sidebar.text_input("أدخل كلمة مرور الأدمن للتنزيل:", type="password")
+
+# كلمة المرور الخاصة بالأدمن (يمكنك تغييرها هنا)
+ADMIN_SECRET_KEY = "Giza2026"
+is_admin = (admin_password == ADMIN_SECRET_KEY)
+
+if not is_admin:
+    # إخفاء شريط أدوات الجدول (الذي يحتوي على زر التنزيل الافتراضي) تماماً عن غير الأدمن
+    st.markdown("""
+        <style>
+        [data-testid="stDataFrameToolbar"] {
+            display: none !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+else:
+    st.sidebar.success("✅ تم تفعيل صلاحيات الأدمن بنجاح")
 
 # --- البحث عن ملف اللوجو بصيغ مختلفة ---
 found_logo_path = None
@@ -332,7 +351,7 @@ with selected_section[0]:
 
     st.altair_chart(chart, use_container_width=True)
 
-# دالة عرض الأقسام التفصيلية داخل التبويبات بدون زر التحميل
+# دالة عرض الأقسام التفصيلية داخل التبويبات مع التحكم بصلاحية الأدمن لزر التنزيل
 def render_section(title, df, tab_index):
     with selected_section[tab_index]:
         st.markdown(f'<p class="program-header">📁 {title}</p>', unsafe_allow_html=True)
@@ -345,6 +364,7 @@ def render_section(title, df, tab_index):
                 display_df = df[mask]
                 st.info(f"عدد النتائج المطابقة للبحث: {len(display_df)}")
             
+            # عرض الجدول (زر التنزيل الافتراضي سيظهر للأدمن فقط ويختفي تلقائياً للمستخدمين العاديين)
             st.dataframe(display_df, use_container_width=True)
         else:
             st.error(f"تعذر العثور على ملف الإكسل الخاص بـ '{title}'. تأكد من رفع الملف في المستودع.")
@@ -360,7 +380,20 @@ render_section("نتيجة برامج منصة الوزارة CPD", df_cpd, 7)
 
 # --- تذييل الصفحة (Footer) ---
 st.markdown("""
-    <div style="text-align: center; padding: 15px; margin-top: 30px; border-top: 1px solid #e2e8f0; color: #475569; font-size: 14px; font-weight: bold; background-color: #f8fafc; border-radius: 8px;">
+    <style>
+    .footer {
+        text-align: center;
+        padding: 15px;
+        margin-top: 30px;
+        border-top: 1px solid #e2e8f0;
+        color: #475569;
+        font-size: 14px;
+        font-weight: bold;
+        background-color: #f8fafc;
+        border-radius: 8px;
+    }
+    </style>
+    <div class="footer">
         تصميم وتنفيذ: <span style="color: #2563eb;">أحمد الجنزوري</span> 🌟
     </div>
 """, unsafe_allow_html=True)
