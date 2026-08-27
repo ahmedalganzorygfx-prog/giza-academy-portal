@@ -90,16 +90,16 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- نظام إخفاء أزرار الجدول للمستخدمين العاديين وإظهارها للأدمن فقط ---
-st.sidebar.markdown("### 🔐 لوحة التحكم وصلاحيات الأدمن")
+# --- نظام إخفاء أزرار الجدول لكل المستخدمين حتى يتم إدخال كلمة المرور الصحيحة ---
+st.sidebar.markdown("### 🔐 لوحة التحكم وصلاحيات التنزيل")
 admin_password = st.sidebar.text_input("أدخل كلمة مرور الأدمن للتنزيل:", type="password")
 
-# كلمة المرور الخاصة بالأدمن (يمكنك تغييرها هنا)
+# كلمة المرور المعتمدة لتنزيل الملفات
 ADMIN_SECRET_KEY = "Giza2026"
 is_admin = (admin_password == ADMIN_SECRET_KEY)
 
+# إذا لم يتم إدخال كلمة المرور الصحيحة، يتم إخفاء شريط أدوات الجدول (أزرار التنزيل) عن الجميع
 if not is_admin:
-    # إخفاء شريط أدوات الجدول (الذي يحتوي على زر التنزيل الافتراضي) تماماً عن غير الأدمن
     st.markdown("""
         <style>
         [data-testid="stDataFrameToolbar"] {
@@ -107,8 +107,10 @@ if not is_admin:
         }
         </style>
     """, unsafe_allow_html=True)
+    if admin_password:
+        st.sidebar.error("❌ كلمة المرور غير صحيحة، يرجى إعادة المحاولة.")
 else:
-    st.sidebar.success("✅ تم تفعيل صلاحيات الأدمن بنجاح")
+    st.sidebar.success("✅ تم التحقق بنجاح، يمكنك التنزيل الآن")
 
 # --- البحث عن ملف اللوجو بصيغ مختلفة ---
 found_logo_path = None
@@ -351,7 +353,7 @@ with selected_section[0]:
 
     st.altair_chart(chart, use_container_width=True)
 
-# دالة عرض الأقسام التفصيلية داخل التبويبات مع التحكم بصلاحية الأدمن لزر التنزيل
+# دالة عرض الأقسام التفصيلية داخل التبويبات مع التحكم بصلاحية التنزيل
 def render_section(title, df, tab_index):
     with selected_section[tab_index]:
         st.markdown(f'<p class="program-header">📁 {title}</p>', unsafe_allow_html=True)
@@ -364,7 +366,7 @@ def render_section(title, df, tab_index):
                 display_df = df[mask]
                 st.info(f"عدد النتائج المطابقة للبحث: {len(display_df)}")
             
-            # عرض الجدول (زر التنزيل الافتراضي سيظهر للأدمن فقط ويختفي تلقائياً للمستخدمين العاديين)
+            # عرض الجدول (زر التنزيل لن يظهر إلا إذا تم كتابة كلمة المرور الصحيحة)
             st.dataframe(display_df, use_container_width=True)
         else:
             st.error(f"تعذر العثور على ملف الإكسل الخاص بـ '{title}'. تأكد من رفع الملف في المستودع.")
