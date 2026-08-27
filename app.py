@@ -79,14 +79,13 @@ st.markdown("""
     
     /* بطاقات تفصيلية لبرامج منصة الوزارة */
     .cpd-card-box { background: #1e293b; border: 1px solid #334155; padding: 15px; border-radius: 12px; color: white; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-    .cpd-title { font-size: 16px; font-weight: bold; color: #38bdf8; margin-bottom: 10px; border-bottom: 1px solid #475569; padding-bottom: 5px; }
-    .cpd-stats { display: flex; justify-content: space-around; text-align: center; font-size: 14px; }
-    .stat-item span { display: block; font-size: 18px; font-weight: bold; margin-top: 4px; }
+    .cpd-title { font-size: 15px; font-weight: bold; color: #38bdf8; margin-bottom: 10px; border-bottom: 1px solid #475569; padding-bottom: 5px; }
+    .cpd-stats { display: flex; justify-content: space-around; text-align: center; font-size: 13px; }
+    .stat-item span { display: block; font-size: 16px; font-weight: bold; margin-top: 4px; }
 
     .card-title { font-size: 14px !important; font-weight: bold; margin-bottom: 5px; }
     .card-number { font-size: 22px; font-weight: bold; }
     .program-header { font-size: 20px !important; font-weight: bold; color: #1e293b; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-top: 20px; margin-bottom: 15px; }
-    .footer-container { text-align: center; padding: 15px; margin-top: 30px; border-top: 1px solid #e2e8f0; color: #475569; font-size: 14px; font-weight: bold; background-color: #f8fafc; border-radius: 8px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -108,7 +107,6 @@ if found_logo_path:
 else:
     logo_display_html = '<div style="color: #f87171; font-size: 12px; margin-bottom: 10px;">⚠️ لم يتم العثور على الشعار</div>'
 
-# عرض الهيدر بالكامل في المنتصف داخل الصندوق الداكن
 st.markdown(f"""
     <div class="app-header-box">
         {logo_display_html}
@@ -117,7 +115,7 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# دالة لتحميل الملفات بالأسماء المضمونة
+# دالة لتحميل الملفات
 def load_excel_file(filename):
     if os.path.exists(filename):
         try:
@@ -146,27 +144,38 @@ c_reassign = len(df_reassign) if df_reassign is not None else 0
 c_batch1 = len(df_batch1) if df_batch1 is not None else 0
 c_batch2 = len(df_batch2) if df_batch2 is not None else 0
 
-# تحليل وتصفية بيانات منصة الوزارة (CPD) بناءً على اسم البرنامج أو عمود البرنامج إذا وجد
-def get_cpd_stats(df, keyword):
+# دالة محسّنة لاستخراج إحصائيات برامج منصة الوزارة بدقة من الأعمدة
+def get_cpd_detailed_stats(df, program_keyword):
     if df is not None:
-        # افتراض أن عمود اسم البرنامج يحتوي على الكلمة المفتاحية أو البحث في كافة الأعمدة
-        match_mask = df.astype(str).apply(lambda x: x.str.contains(keyword, case=False, na=False)).any(axis=1)
-        sub_df = df[match_mask]
+        # البحث عن الصفوف التي تخص البرنامج المطلوب
+        prog_mask = df.astype(str).apply(lambda x: x.str.contains(program_keyword, case=False, na=False)).any(axis=1)
+        sub_df = df[prog_mask]
         total = len(sub_df)
         
-        # محاولة البحث عن أعمدة الحالة (اجتياز / عدم اجتياز / عدم حضور) إذا كانت موجودة
-        passed = len(sub_df[sub_df.astype(str).apply(lambda x: x.str.contains("اجتياز", case=False, na=False)).any(axis=1)]) if total > 0 else 0
-        failed = len(sub_df[sub_df.astype(str).apply(lambda x: x.str.contains("عدم اجتياز", case=False, na=False)).any(axis=1)]) if total > 0 else 0
-        absent = len(sub_df[sub_df.astype(str).apply(lambda x: x.str.contains("غائب", case=False, na=False) | x.str.contains("عدم حضور", case=False, na=False)).any(axis=1)]) if total > 0 else 0
+        if total == 0:
+            return 0, 0, 0, 0
+            
+        # دالة مساعدة للبحث عن الحالة داخل صفوف البرنامج المحدد
+        def count_status(keywords):
+            # البحث في كافة الأعمدة الخاصة بالفرع عن الكلمات المفتاحية للحالة (مثل اجتياز، عدم اجتياز، غائب/لم يحضر)
+            match = sub_df.astype(str).apply(lambda x: x.str.contains('|'.join(keywords), case=False, na=False)).any(axis=1)
+            return len(sub_df[match])
+
+        # حساب الاجتياز
+        passed = count_status(["اجتياز", "ناجح", "مجتز"])
+        # حساب عدم الاجتياز
+        failed = count_status(["عدم اجتياز", "راسب", "لم يجتز", "غير مجتز"])
+        # حساب عدم الحضور / الغياب
+        absent = count_status(["عدم حضور", "غائب", "لم يحضر", "معتذر", "تخلف"])
         
         return total, passed, failed, absent
     return 0, 0, 0, 0
 
-# حساب إحصائيات الأقسام الأربعة لمنصة الوزارة
-cpd_p1_total, cpd_p1_pass, cpd_p1_fail, cpd_p1_abs = get_cpd_stats(df_cpd, "التطبيقات التربوية")
-cpd_p2_total, cpd_p2_pass, cpd_p2_fail, cpd_p2_abs = get_cpd_stats(df_cpd, "مدير/ وكيل إدارة مدرسية")
-cpd_p3_total, cpd_p3_pass, cpd_p3_fail, cpd_p3_abs = get_cpd_stats(df_cpd, "التوجيه الفنى")
-cpd_p4_total, cpd_p4_pass, cpd_p4_fail, cpd_p4_abs = get_cpd_stats(df_cpd, "مدير/ وكيل إدارة تعليميةية" if False else "إدارة تعليمية")
+# حساب الإحصائيات الأربع المطلوبة لبرامج منصة الوزارة
+cpd_p1_total, cpd_p1_pass, cpd_p1_fail, cpd_p1_abs = get_cpd_detailed_stats(df_cpd, "التطبيقات التربوية")
+cpd_p2_total, cpd_p2_pass, cpd_p2_fail, cpd_p2_abs = get_cpd_detailed_stats(df_cpd, "مدير/ وكيل إدارة مدرسية")
+cpd_p3_total, cpd_p3_pass, cpd_p3_fail, cpd_p3_abs = get_cpd_detailed_stats(df_cpd, "التوجيه الفنى")
+cpd_p4_total, cpd_p4_pass, cpd_p4_fail, cpd_p4_abs = get_cpd_detailed_stats(df_cpd, "إدارة تعليمية")
 
 # --- الأزرار الأفقية (Tabs) للتنقل المباشر ---
 selected_section = st.tabs([
@@ -225,7 +234,7 @@ with selected_section[0]:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # تقسيم وتحليل بطاقات منصة الوزارة CPD بالتفصيل
+    # تقسيم وتحليل بطاقات منصة الوزارة CPD بالتفصيل (الإجمالي، الاجتياز، عدم الاجتياز، عدم الحضور)
     st.markdown("### 📊 تفصيل إحصاءات برامج منصة الوزارة CPD (2025/2026)")
     
     cpd_col1, cpd_col2 = st.columns(2)
@@ -296,7 +305,7 @@ with selected_section[0]:
 
     st.altair_chart(chart, use_container_width=True)
 
-# دالة لتحويل الداتا فريم إلى CSV للتحميل المباشر (متاح للجميع الآن)
+# دالة لتحويل الداتا فريم إلى CSV للتحميل المباشر
 def convert_df_to_csv(df):
     return df.to_csv(index=True).encode('utf-8-sig')
 
@@ -315,7 +324,6 @@ def render_section(title, df, tab_index):
             
             st.dataframe(display_df, use_container_width=True)
             
-            # زر التحميل المباشر متاح للجميع الآن بعد إزالة قفل الأدمن
             csv_data = convert_df_to_csv(display_df)
             st.download_button(
                 label=f"📥 تنزيل كشف {title}",
