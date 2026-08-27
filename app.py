@@ -29,20 +29,22 @@ st.markdown("""
         display: none !important;
     }
     
-    /* تصميم الهيدر المتناسق (Flexbox Layout) داخل المربع الداكن */
+    /* تصميم الهيدر المركزي المتكامل (توسيط كامل) */
     .app-header-box {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        padding: 25px 30px;
+        padding: 35px 20px;
         border-radius: 16px;
         color: white;
         box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         margin-bottom: 30px;
         border: 1px solid #334155;
+        text-align: center;
         display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 25px;
+        justify-content: center;
     }
-    /* تحجيم اللوجو ليتناسب تماماً مع ارتفاع صندوق الخلفية */
+    /* تحجيم وتوسيط اللوجو داخل الصندوق */
     .app-logo-img {
         width: 100px !important;
         min-width: 100px !important;
@@ -53,25 +55,23 @@ st.markdown("""
         background: rgba(255, 255, 255, 0.05);
         padding: 5px;
         border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    .app-text-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+        margin-bottom: 15px;
     }
     .app-main-title {
         font-size: 32px !important;
         font-weight: 800 !important;
-        margin: 0 0 6px 0 !important;
+        margin: 0 0 8px 0 !important;
         color: #ffffff !important;
         letter-spacing: -0.5px;
         line-height: 1.2;
+        text-align: center;
     }
     .app-sub-title {
         font-size: 17px !important;
         color: #38bdf8 !important;
         font-weight: 600 !important;
         margin: 0 !important;
+        text-align: center;
     }
 
     .metric-card-1 { background: linear-gradient(135deg, #1f4037 0%, #99f2c8 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
@@ -103,16 +103,14 @@ if found_logo_path:
     mime_type = "image/jpeg" if img_ext in ["jpg", "jpeg"] else "image/png"
     logo_display_html = f'<img src="data:{mime_type};base64,{encoded_string}" class="app-logo-img">'
 else:
-    logo_display_html = '<div style="color: #f87171; font-size: 12px;">⚠️ لم يتم العثور على الشعار</div>'
+    logo_display_html = '<div style="color: #f87171; font-size: 12px; margin-bottom: 10px;">⚠️ لم يتم العثور على الشعار</div>'
 
-# عرض الهيدر المتناسق (اللوجو والعناوين بجوار بعضهما داخل الصندوق الداكن)
+# عرض الهيدر بالكامل في المنتصف داخل الصندوق الداكن
 st.markdown(f"""
     <div class="app-header-box">
         {logo_display_html}
-        <div class="app-text-container">
-            <div class="app-main-title">الأكاديمية المهنية للمعلمين - فرع الجيزة</div>
-            <div class="app-sub-title">بوابة الخدمات الرقمية وإدارة بيانات المعلمين المتكاملة</div>
-        </div>
+        <div class="app-main-title">الأكاديمية المهنية للمعلمين - فرع الجيزة</div>
+        <div class="app-sub-title">بوابة الخدمات الرقمية وإدارة بيانات المعلمين المتكاملة</div>
     </div>
 """, unsafe_allow_html=True)
 
