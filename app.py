@@ -45,32 +45,31 @@ st.markdown("""
 # عنوان الصفحة العلوي
 st.markdown('<div class="top-header">🏫 الأكاديمية المهنية للمعلمين - فرع الجيزة (بوابة الخدمات الرقمية)</div>', unsafe_allow_html=True)
 
-# دالة ذكية لتحميل ملفات الإكسل برمجياً بالكلمات المفتاحية
-def find_and_load_excel(keyword):
-    for file in os.listdir('.'):
-        if file.endswith('.xlsx') and keyword in file:
-            try:
-                df = pd.read_excel(file)
-                df.index = range(1, len(df) + 1)
-                df.index.name = "م"
-                return df, file
-            except Exception:
-                pass
-    return None, None
+# دالة ذكية لتحميل الملفات بالأسماء المباشرة الدقيقة
+def load_excel_file(filename):
+    if os.path.exists(filename):
+        try:
+            df = pd.read_excel(filename)
+            df.index = range(1, len(df) + 1)
+            df.index.name = "م"
+            return df
+        except Exception:
+            return None
+    return None
 
-# تحميل الملفات الستة
-df_reassign, name_reassign = find_and_load_excel("160")
-df_cader, name_cader = find_and_load_excel("التسكين")
-df_job, name_job = find_and_load_excel("مسمى")
-df_training, name_training = find_and_load_excel("معد")
-df_batch1, name_batch1 = find_and_load_excel("الاولى")
-df_batch2, name_batch2 = find_and_load_excel("الثانية")
+# تحميل الملفات الستة بالأسماء الجديدة المباشرة والمضمونة
+df_training = load_excel_file("training.xlsx")
+df_job = load_excel_file("job.xlsx")
+df_cader = load_excel_file("cader.xlsx")
+df_reassign = load_excel_file("160.xlsx")
+df_batch1 = load_excel_file("batch1.xlsx")
+df_batch2 = load_excel_file("batch2.xlsx")
 
-# حساب أعداد السجلات
-c_reassign = len(df_reassign) if df_reassign is not None else 0
-c_cader = len(df_cader) if df_cader is not None else 0
-c_job = len(df_job) if df_job is not None else 0
+# حساب أعداد السجلات بكل دقة
 c_training = len(df_training) if df_training is not None else 0
+c_job = len(df_job) if df_job is not None else 0
+c_cader = len(df_cader) if df_cader is not None else 0
+c_reassign = len(df_reassign) if df_reassign is not None else 0
 c_batch1 = len(df_batch1) if df_batch1 is not None else 0
 c_batch2 = len(df_batch2) if df_batch2 is not None else 0
 
@@ -161,7 +160,7 @@ def render_section(title, df):
             st.info(f"عدد النتائج المطابقة للبحث: {len(display_df)}")
         st.dataframe(display_df, use_container_width=True)
     else:
-        st.error(f"تعذر العثور على ملف الإكسل الخاص بـ '{title}'.")
+        st.error(f"تعذر العثور على ملف الإكسل الخاص بـ '{title}'. تأكد من رفع الملف باسمه الصحيح في المستودع.")
 
 # توجيه الشاشات حسب الاختيار
 if selected_section == "📁 معد البرامج التدريبية":
@@ -171,7 +170,7 @@ elif selected_section == "📁 المسمى الوظيفي":
 elif selected_section == "📁 التسكين علي الكادر":
     render_section("التسكين علي الكادر", df_cader)
 elif selected_section == "📁 إعادة التعيين (قرار 160)":
-    render_section("إعادة التعيين (قرار 160 لسنة 2024)", df_reassign)
+    render_section("إعادة التعيين (قرار 160)", df_reassign)
 elif selected_section == "📁 معلم مساعد الدفعة الأولى":
     render_section("معلم مساعد الدفعة الأولى", df_batch1)
 elif selected_section == "📁 معلم مساعد الدفعة الثانية":
