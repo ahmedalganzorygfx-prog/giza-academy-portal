@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تخصيص واجهة المستخدم بالكامل وتصميم الهيدر والشعار
+# تخصيص واجهة المستخدم وجعل العناوين في المنتصف تماماً
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -28,41 +28,27 @@ st.markdown("""
         display: none !important;
     }
     
-    /* تصميم رأسية العنوان الرئيسية مع الشعار */
-    .main-header-container {
+    /* تصميم الهيدر المركزي المتكامل */
+    .centered-header-container {
         background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        padding: 20px;
+        padding: 25px;
         border-radius: 12px;
         color: white;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         margin-bottom: 25px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+        text-align: center;
     }
-    .header-text {
-        text-align: right;
-        flex-grow: 1;
-    }
-    .header-title {
-        font-size: 22px;
+    .header-main-title {
+        font-size: 24px;
         font-weight: bold;
+        margin-top: 10px;
         margin-bottom: 5px;
         color: #ffffff;
     }
-    .header-subtitle {
-        font-size: 14px;
+    .header-sub-title {
+        font-size: 15px;
         color: #94a3b8;
-    }
-    .logo-box {
-        background-color: #ffffff;
-        padding: 8px 15px;
-        border-radius: 8px;
-        color: #1e293b;
-        font-weight: bold;
-        font-size: 13px;
-        text-align: center;
-        border: 2px dashed #3b82f6;
+        font-weight: normal;
     }
 
     .metric-card-1 { background: linear-gradient(135deg, #1f4037 0%, #99f2c8 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
@@ -78,23 +64,30 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- العنوان الرئيسي المدمج مع خانة الشعار (Logo) ---
-st.markdown("""
-    <div class="main-header-container">
-        <div class="header-text">
-            <div class="header-title">🏫 الأكاديمية المهنية للمعلمين - فرع الجيزة</div>
-            <div class="header-subtitle">بوابة الخدمات الرقمية وإدارة بيانات المعلمين المتكاملة</div>
-        </div>
-        <div class="logo-box">
-            🖼️ شعار الفرع<br><span style="font-size: 10px; color: #64748b;">(Logo Area)</span>
-        </div>
-    </div>
-""", unsafe_allow_html=True)
+# --- الهيدر المركزي (الشعار في المنتصف يعلو العناوين) ---
+st.markdown('<div class="centered-header-container">', unsafe_allow_html=True)
 
-# (اختياري) إذا أردت رفع شعار حقيقي كصورة بدلاً من المربع النصي، يمكنك استخدام هذه الدالة مباشرة:
-# st.image("logo.png", width=120)
+# 🖼️ طريقة وضع اللوجو:
+# قم برفع صورة الشعار باسم "logo.png" إلى نفس مجلد المشروع على GitHub، وسيظهر تلقائياً هنا في المنتصف.
+# إذا لم تقم بررفع الصورة بعد، سيظهر تنبيه لطيف بدلاً منها.
+if os.path.exists("logo.png"):
+    col_img1, col_img2, col_img3 = st.columns([2, 1, 2])
+    with col_img2:
+        st.image("logo.png", width=110)
+elif os.path.exists("logo.jpg"):
+    col_img1, col_img2, col_img3 = st.columns([2, 1, 2])
+    with col_img2:
+        st.image("logo.jpg", width=110)
+else:
+    st.markdown('<span style="font-size: 12px; color: #cbd5e1; background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 4px;">📌 ارفع صورة شعار باسم logo.png لتظهر هنا</span>', unsafe_allow_html=True)
 
-# دالة ذكية لتحميل الملفات بالأسماء المباشرة الدقيقة
+# العناوين الرئيسية والفرعية في المنتصف تماماً
+st.markdown('<div class="header-main-title">🏫 الأكاديمية المهنية للمعلمين - فرع الجيزة</div>', unsafe_allow_html=True)
+st.markdown('<div class="header-sub-title">بوابة الخدمات الرقمية وإدارة بيانات المعلمين المتكاملة</div>', unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# دالة لتحميل الملفات بالأسماء المضمونة
 def load_excel_file(filename):
     if os.path.exists(filename):
         try:
@@ -106,7 +99,7 @@ def load_excel_file(filename):
             return None
     return None
 
-# تحميل الملفات الستة بالأسماء المبسطة المضمونة
+# تحميل الملفات الستة
 df_training = load_excel_file("training.xlsx")
 df_job = load_excel_file("job.xlsx")
 df_cader = load_excel_file("cader.xlsx")
@@ -114,7 +107,7 @@ df_reassign = load_excel_file("160.xlsx")
 df_batch1 = load_excel_file("batch1.xlsx")
 df_batch2 = load_excel_file("batch2.xlsx")
 
-# حساب أعداد السجلات بكل دقة
+# حساب أعداد السجلات
 c_training = len(df_training) if df_training is not None else 0
 c_job = len(df_job) if df_job is not None else 0
 c_cader = len(df_cader) if df_cader is not None else 0
