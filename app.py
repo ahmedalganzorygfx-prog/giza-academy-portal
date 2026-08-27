@@ -43,7 +43,7 @@ st.markdown("""
     /* تصغير حجم اللوجو لأقصى حد ممكن */
     .app-logo-img {
         max-width: 40px !important;
-        width: 40px !important;
+        width: 120px !important;
         height: auto !important;
         margin-bottom: 10px;
         border-radius: 4px;
