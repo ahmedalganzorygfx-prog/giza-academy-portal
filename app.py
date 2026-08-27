@@ -90,8 +90,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- تم إلغاء لوحة التحكم وكلمة المرور نهائياً وأزرار التنزيل متاحة للجميع ---
-
 # --- البحث عن ملف اللوجو بصيغ مختلفة ---
 found_logo_path = None
 possible_names = ["logo.png", "Logo.png", "LOGO.PNG", "logo.jpg", "Logo.jpg", "LOGO.JPG", "logo.jpeg", "Logo.jpeg"]
@@ -192,20 +190,24 @@ cpd_grand_pass = cpd_p1_pass + cpd_p2_pass + cpd_p3_pass + cpd_p4_pass
 cpd_grand_fail = cpd_p1_fail + cpd_p2_fail + cpd_p3_fail + cpd_p4_fail
 cpd_grand_abs = cpd_p1_abs + cpd_p2_abs + cpd_p3_abs + cpd_p4_abs
 
-# --- الأزرار الأفقية (Tabs) للتنقل المباشر ---
-selected_section = st.tabs([
-    "🏠 الرئيسية والبحث الشامل",
-    "📁 معد البرامج",
-    "📁 المسمى الوظيفي",
-    "📁 التسكين علي الكادر",
-    "📁 قرار 160",
-    "📁 ملفات معلم مساعد الدفعة 1",
-    "📁 ملفات معلم مساعد الدفعة 2",
-    "📁 منصة الوزارة CPD"
-])
+# --- قائمة منسدلة (Drop-down list) للتنقل بين الأقسام بدلاً من التبويبات الكثيرة ---
+st.sidebar.markdown("### 🗂️ القائمة الرئيسية")
+selected_option = st.sidebar.selectbox(
+    "اختر القسم المطلوب للانتقال إليه:",
+    [
+        "🏠 الرئيسية والبحث الشامل",
+        "📁 معد البرامج",
+        "📁 المسمى الوظيفي",
+        "📁 التسكين علي الكادر",
+        "📁 قرار 160",
+        "📁 ملفات معلم مساعد الدفعة 1",
+        "📁 ملفات معلم مساعد الدفعة 2",
+        "📁 منصة الوزارة CPD"
+    ]
+)
 
 # 1. شاشة الرئيسية والمؤشرات العامة والبحث الشامل
-with selected_section[0]:
+if selected_option == "🏠 الرئيسية والبحث الشامل":
     st.markdown("### 🔎 البحث الشامل بالكود في كافة الملفات والبرامج")
     global_search_code = st.text_input("أدخل كود المعلم للبحث الفوري عنه في جميع الكشوفات:", placeholder="مثال: 3089097")
 
@@ -333,32 +335,37 @@ with selected_section[0]:
 
     st.altair_chart(chart, use_container_width=True)
 
-# دالة عرض الأقسام التفصيلية داخل التبويبات بدون أي قيود على التنزيل
-def render_section(title, df, tab_index):
-    with selected_section[tab_index]:
-        st.markdown(f'<p class="program-header">📁 {title}</p>', unsafe_allow_html=True)
-        if df is not None:
-            st.metric(label=f"إجمالي السجلات في هذا الكشف", value=len(df))
-            search_query = st.text_input(f"🔍 بحث مخصص داخل كشف {title}:", key=f"search_{title}")
-            display_df = df
-            if search_query:
-                mask = df.astype(str).apply(lambda x: x.str.contains(search_query, case=False, na=False)).any(axis=1)
-                display_df = df[mask]
-                st.info(f"عدد النتائج المطابقة للبحث: {len(display_df)}")
-            
-            # عرض الجدول مع أزرار التنزيل الافتراضية المتاحة للجميع
-            st.dataframe(display_df, use_container_width=True)
-        else:
-            st.error(f"تعذر العثور على ملف الإكسل الخاص بـ '{title}'. تأكد من رفع الملف في المستودع.")
+# دالة عرض الأقسام التفصيلية بناءً على اختيار القائمة المنسدلة
+def render_section_by_dropdown(title, df):
+    st.markdown(f'<p class="program-header">📁 {title}</p>', unsafe_allow_html=True)
+    if df is not None:
+        st.metric(label=f"إجمالي السجلات في هذا الكشف", value=len(df))
+        search_query = st.text_input(f"🔍 بحث مخصص داخل كشف {title}:", key=f"search_{title}")
+        display_df = df
+        if search_query:
+            mask = df.astype(str).apply(lambda x: x.str.contains(search_query, case=False, na=False)).any(axis=1)
+            display_df = df[mask]
+            st.info(f"عدد النتائج المطابقة للبحث: {len(display_df)}")
+        
+        st.dataframe(display_df, use_container_width=True)
+    else:
+        st.error(f"تعذر العثور على ملف الإكسل الخاص بـ '{title}'. تأكد من رفع الملف في المستودع.")
 
-# عرض محتوى كل تبويب تفصيلي
-render_section("معد البرامج التدريبية", df_training, 1)
-render_section("المسمى الوظيفي", df_job, 2)
-render_section("التسكين علي الكادر", df_cader, 3)
-render_section("إعادة التعيين (قرار 160)", df_reassign, 4)
-render_section("معلم مساعد الدفعة الأولى", df_batch1, 5)
-render_section("معلم مساعد الدفعة الثانية", df_batch2, 6)
-render_section("نتيجة برامج منصة الوزارة CPD", df_cpd, 7)
+# عرض القسم المختيار من القائمة المنسدلة
+if selected_option == "📁 معد البرامج":
+    render_section_by_dropdown("معد البرامج التدريبية", df_training)
+elif selected_option == "📁 المسمى الوظيفي":
+    render_section_by_dropdown("المسمى الوظيفي", df_job)
+elif selected_option == "📁 التسكين علي الكادر":
+    render_section_by_dropdown("التسكين علي الكادر", df_cader)
+elif selected_option == "📁 قرار 160":
+    render_section_by_dropdown("إعادة التعيين (قرار 160)", df_reassign)
+elif selected_option == "📁 ملفات معلم مساعد الدفعة 1":
+    render_section_by_dropdown("معلم مساعد الدفعة الأولى", df_batch1)
+elif selected_option == "📁 ملفات معلم مساعد الدفعة 2":
+    render_section_by_dropdown("معلم مساعد الدفعة الثانية", df_batch2)
+elif selected_option == "📁 منصة الوزارة CPD":
+    render_section_by_dropdown("نتيجة برامج منصة الوزارة CPD", df_cpd)
 
 # --- تذييل الصفحة (Footer) ---
 st.markdown("""
