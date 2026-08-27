@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import os
+import base64
 
 # إعدادات الصفحة وعرض الواجهة بالشكل العريض
 st.set_page_config(
@@ -28,7 +29,7 @@ st.markdown("""
         display: none !important;
     }
     
-    /* تصميم الهيدر المركزي المتكامل الجديد */
+    /* تصميم الهيدر المركزي المتكامل */
     .app-header-box {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         padding: 35px 20px;
@@ -40,7 +41,7 @@ st.markdown("""
         border: 1px solid #334155;
     }
     .app-logo-img {
-        width: 110px;
+        max-width: 120px;
         height: auto;
         margin-bottom: 15px;
         border-radius: 8px;
@@ -72,24 +73,30 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- الهيدر المركزي المحدث (اللوجو والعنوان في المنتصف تماماً) ---
-logo_path = "logo.png" if os.path.exists("logo.png") else ("logo.jpg" if os.path.exists("logo.jpg") else None)
+# --- البحث عن ملف اللوجو بصيغ مختلفة (يشمل الحروف الكبيرة وصيغ الـ png و jpg) ---
+found_logo_path = None
+possible_names = ["logo.png", "Logo.png", "LOGO.PNG", "logo.jpg", "Logo.jpg", "LOGO.JPG", "logo.jpeg", "Logo.jpeg"]
 
-if logo_path:
-    import base64
-    def get_image_base64(path):
-        with open(path, "rb") as f:
-            data = f.read()
-        return base64.b64encode(data).decode()
-    
-    img_base64 = get_image_base64(logo_path)
-    logo_html = f'<img src="data:image/png;base64,{img_base64}" class="app-logo-img">'
+for name in possible_names:
+    if os.path.exists(name):
+        found_logo_path = name
+        break
+
+# تجهيز كود عرض اللوجو أو تنبيه في حال لم يتم العثور على الملف بالمجلد
+if found_logo_path:
+    with open(found_logo_path, "rb") as img_file:
+        encoded_string = base64.b64encode(img_file.read()).decode()
+    # تحديد نوع الصورة تلقائياً
+    img_ext = found_logo_path.split('.')[-1].lower()
+    mime_type = "image/jpeg" if img_ext in ["jpg", "jpeg"] else "image/png"
+    logo_display_html = f'<img src="data:{mime_type};base64,{encoded_string}" class="app-logo-img">'
 else:
-    logo_html = '<div style="font-size: 50px; margin-bottom: 10px;">🏫</div>'
+    logo_display_html = '<div style="color: #f87171; font-size: 14px; margin-bottom: 10px; background: rgba(239, 68, 68, 0.1); padding: 8px; border-radius: 6px;">⚠️ تنبيه: لم يتم العثور على ملف الشعار (logo.png). تأكد من رفع صورة الشعار في مجلد المشروع.</div>'
 
+# عرض الهيدر المركزي المتكامل
 st.markdown(f"""
     <div class="app-header-box">
-        {logo_html}
+        {logo_display_html}
         <div class="app-main-title">الأكاديمية المهنية للمعلمين - فرع الجيزة</div>
         <div class="app-sub-title">بوابة الخدمات الرقمية وإدارة بيانات المعلمين المتكاملة</div>
     </div>
