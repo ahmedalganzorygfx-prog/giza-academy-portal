@@ -32,7 +32,7 @@ st.markdown("""
     /* تصميم الهيدر المركزي المتكامل */
     .app-header-box {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        padding: 30px 20px;
+        padding: 35px 20px;
         border-radius: 16px;
         color: white;
         box-shadow: 0 8px 16px rgba(0,0,0,0.2);
@@ -40,13 +40,15 @@ st.markdown("""
         text-align: center;
         border: 1px solid #334155;
     }
-    /* تصغير حجم اللوجو لأقصى حد ممكن */
+    /* تكبير وتثبيت حجم اللوجو بقوة لمنع التخزين المؤقت */
     .app-logo-img {
-        max-width: 40px !important;
-        width: 40px !important;
+        width: 120px !important;
+        min-width: 120px !important;
+        max-width: 120px !important;
         height: auto !important;
-        margin-bottom: 10px;
-        border-radius: 4px;
+        margin-bottom: 15px !important;
+        border-radius: 8px;
+        display: inline-block;
     }
     .app-main-title {
         font-size: 36px !important;
@@ -89,7 +91,8 @@ if found_logo_path:
         encoded_string = base64.b64encode(img_file.read()).decode()
     img_ext = found_logo_path.split('.')[-1].lower()
     mime_type = "image/jpeg" if img_ext in ["jpg", "jpeg"] else "image/png"
-    logo_display_html = f'<img src="data:{mime_type};base64,{encoded_string}" class="app-logo-img">'
+    # إضافة الأبعاد مباشرة داخل وسم الـ HTML للإجبار على التكبير
+    logo_display_html = f'<img src="data:{mime_type};base64,{encoded_string}" class="app-logo-img" width="120">'
 else:
     logo_display_html = '<div style="color: #f87171; font-size: 12px; margin-bottom: 5px;">⚠️ لم يتم العثور على ملف الشعار</div>'
 
