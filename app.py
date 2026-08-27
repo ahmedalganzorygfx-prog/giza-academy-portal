@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تخصيص واجهة المستخدم وتوسيط العناوين بخطوط كبيرة وواضحة
+# تخصيص واجهة المستخدم وتوسيط العناوين بخطوط كبيرة وواضحة جداً
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -28,27 +28,35 @@ st.markdown("""
         display: none !important;
     }
     
-    /* تصميم الهيدر المركزي المتكامل */
-    .centered-header-container {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        padding: 30px 20px;
-        border-radius: 12px;
+    /* تصميم الهيدر المركزي المتكامل الجديد */
+    .app-header-box {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        padding: 35px 20px;
+        border-radius: 16px;
         color: white;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        margin-bottom: 25px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        margin-bottom: 30px;
         text-align: center;
+        border: 1px solid #334155;
     }
-    .header-main-title {
-        font-size: 34px !important;
-        font-weight: bold !important;
-        margin-top: 15px !important;
-        margin-bottom: 8px !important;
+    .app-logo-img {
+        width: 110px;
+        height: auto;
+        margin-bottom: 15px;
+        border-radius: 8px;
+    }
+    .app-main-title {
+        font-size: 36px !important;
+        font-weight: 800 !important;
+        margin: 10px 0 8px 0 !important;
         color: #ffffff !important;
+        letter-spacing: -0.5px;
     }
-    .header-sub-title {
-        font-size: 18px !important;
-        color: #94a3b8 !important;
+    .app-sub-title {
+        font-size: 19px !important;
+        color: #38bdf8 !important;
         font-weight: 600 !important;
+        margin: 0 !important;
     }
 
     .metric-card-1 { background: linear-gradient(135deg, #1f4037 0%, #99f2c8 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
@@ -64,27 +72,28 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- الهيدر المركزي ---
-st.markdown('<div class="centered-header-container">', unsafe_allow_html=True)
+# --- الهيدر المركزي المحدث (اللوجو والعنوان في المنتصف تماماً) ---
+logo_path = "logo.png" if os.path.exists("logo.png") else ("logo.jpg" if os.path.exists("logo.jpg") else None)
 
-# عرض صورة اللوجو في المنتصف تماماً إذا كانت مرفوعة
-logo_found = False
-for logo_name in ["logo.png", "logo.jpg", "logo.jpeg"]:
-    if os.path.exists(logo_name):
-        col1, col2, col3 = st.columns([2, 1, 2])
-        with col2:
-            st.image(logo_name, width=110)
-        logo_found = True
-        break
+if logo_path:
+    import base64
+    def get_image_base64(path):
+        with open(path, "rb") as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    
+    img_base64 = get_image_base64(logo_path)
+    logo_html = f'<img src="data:image/png;base64,{img_base64}" class="app-logo-img">'
+else:
+    logo_html = '<div style="font-size: 50px; margin-bottom: 10px;">🏫</div>'
 
-if not logo_found:
-    st.markdown('<span style="font-size: 12px; color: #cbd5e1; background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 4px;">📌 برجاء رفع صورة الشعار باسم logo.png لتظهر هنا</span>', unsafe_allow_html=True)
-
-# العناوين في المنتصف بخط كبير وواضح
-st.markdown('<div class="header-main-title">الأكاديمية المهنية للمعلمين - فرع الجيزة</div>', unsafe_allow_html=True)
-st.markdown('<div class="header-sub-title">بوابة الخدمات الرقمية وإدارة بيانات المعلمين المتكاملة</div>', unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown(f"""
+    <div class="app-header-box">
+        {logo_html}
+        <div class="app-main-title">الأكاديمية المهنية للمعلمين - فرع الجيزة</div>
+        <div class="app-sub-title">بوابة الخدمات الرقمية وإدارة بيانات المعلمين المتكاملة</div>
+    </div>
+""", unsafe_allow_html=True)
 
 # دالة لتحميل الملفات بالأسماء المضمونة
 def load_excel_file(filename):
