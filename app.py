@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تخصيص واجهة المستخدم وجعل العناوين في المنتصف تماماً
+# تخصيص واجهة المستخدم وتوسيط العناوين وجعل الخطوط أكبر وأوضح
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -28,27 +28,30 @@ st.markdown("""
         display: none !important;
     }
     
-    /* تصميم الهيدر المركزي المتكامل */
+    /* تصميم الهيدر المركزي المتكامل وبخطوط كبيرة وواضحة في المنتصف */
     .centered-header-container {
         background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        padding: 25px;
+        padding: 30px 20px;
         border-radius: 12px;
         color: white;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         margin-bottom: 25px;
         text-align: center;
     }
+    .header-logo-icon {
+        font-size: 45px;
+        margin-bottom: 10px;
+    }
     .header-main-title {
-        font-size: 24px;
-        font-weight: bold;
-        margin-top: 10px;
-        margin-bottom: 5px;
-        color: #ffffff;
+        font-size: 32px !important;
+        font-weight: bold !important;
+        margin-bottom: 8px !important;
+        color: #ffffff !important;
     }
     .header-sub-title {
-        font-size: 15px;
-        color: #94a3b8;
-        font-weight: normal;
+        font-size: 18px !important;
+        color: #94a3b8 !important;
+        font-weight: 600 !important;
     }
 
     .metric-card-1 { background: linear-gradient(135deg, #1f4037 0%, #99f2c8 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
@@ -64,28 +67,14 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- الهيدر المركزي (الشعار في المنتصف يعلو العناوين) ---
-st.markdown('<div class="centered-header-container">', unsafe_allow_html=True)
-
-# 🖼️ طريقة وضع اللوجو:
-# قم برفع صورة الشعار باسم "logo.png" إلى نفس مجلد المشروع على GitHub، وسيظهر تلقائياً هنا في المنتصف.
-# إذا لم تقم بررفع الصورة بعد، سيظهر تنبيه لطيف بدلاً منها.
-if os.path.exists("logo.png"):
-    col_img1, col_img2, col_img3 = st.columns([2, 1, 2])
-    with col_img2:
-        st.image("logo.png", width=110)
-elif os.path.exists("logo.jpg"):
-    col_img1, col_img2, col_img3 = st.columns([2, 1, 2])
-    with col_img2:
-        st.image("logo.jpg", width=110)
-else:
-    st.markdown('<span style="font-size: 12px; color: #cbd5e1; background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 4px;">📌 ارفع صورة شعار باسم logo.png لتظهر هنا</span>', unsafe_allow_html=True)
-
-# العناوين الرئيسية والفرعية في المنتصف تماماً
-st.markdown('<div class="header-main-title">🏫 الأكاديمية المهنية للمعلمين - فرع الجيزة</div>', unsafe_allow_html=True)
-st.markdown('<div class="header-sub-title">بوابة الخدمات الرقمية وإدارة بيانات المعلمين المتكاملة</div>', unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
+# --- الهيدر المركزي (اللوجو، العنوان الرئيسي بخط كبير، والعنوان الفرعي في المنتصف تماماً) ---
+st.markdown("""
+    <div class="centered-header-container">
+        <div class="header-logo-icon">🏫</div>
+        <div class="header-main-title">الأكاديمية المهنية للمعلمين - فرع الجيزة</div>
+        <div class="header-sub-title">بوابة الخدمات الرقمية وإدارة بيانات المعلمين المتكاملة</div>
+    </div>
+""", unsafe_allow_html=True)
 
 # دالة لتحميل الملفات بالأسماء المضمونة
 def load_excel_file(filename):
