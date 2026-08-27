@@ -239,6 +239,6 @@ render_section("معلم مساعد الدفعة الثانية", df_batch2, 6)
 # --- تذييل الصفحة (Footer) ---
 st.markdown("""
     <div class="footer-container">
-        تصميم وتنفيذ: <span style="color: #2563eb;">أحمد الجنزوري</span> 🌟
+        تصميم وتنفيذ: <span style="color: #2563eb;">أحمد الجنزوري-مدير الفرع</span> 🌟
     </div>
 """, unsafe_allow_html=True)
