@@ -26,7 +26,7 @@ st.markdown("""
         display: none !important;
     }
     
-    /* تصميم الهيدر المركزي المتكامل مع زيادة المساحة */
+    /* تصميم الهيدر المركزي المتكامل */
     .app-header-box {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         padding: 40px 20px;
@@ -41,7 +41,6 @@ st.markdown("""
         align-items: center;
         justify-content: center;
     }
-    /* تكبير حجم اللوجو بشكل كبير وواضح (180 بكسل) */
     .app-logo-img {
         width: 180px !important;
         min-width: 180px !important;
@@ -77,27 +76,19 @@ st.markdown("""
     .metric-card-4 { background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
     .metric-card-5 { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
     .metric-card-6 { background: linear-gradient(135deg, #cb356b 0%, #bd3f32 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
-    .metric-card-7 { background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
     
+    /* بطاقات تفصيلية لبرامج منصة الوزارة */
+    .cpd-card-box { background: #1e293b; border: 1px solid #334155; padding: 15px; border-radius: 12px; color: white; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+    .cpd-title { font-size: 16px; font-weight: bold; color: #38bdf8; margin-bottom: 10px; border-bottom: 1px solid #475569; padding-bottom: 5px; }
+    .cpd-stats { display: flex; justify-content: space-around; text-align: center; font-size: 14px; }
+    .stat-item span { display: block; font-size: 18px; font-weight: bold; margin-top: 4px; }
+
     .card-title { font-size: 14px !important; font-weight: bold; margin-bottom: 5px; }
     .card-number { font-size: 22px; font-weight: bold; }
     .program-header { font-size: 20px !important; font-weight: bold; color: #1e293b; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-top: 20px; margin-bottom: 15px; }
     .footer-container { text-align: center; padding: 15px; margin-top: 30px; border-top: 1px solid #e2e8f0; color: #475569; font-size: 14px; font-weight: bold; background-color: #f8fafc; border-radius: 8px; }
     </style>
 """, unsafe_allow_html=True)
-
-# --- لوحة تحكم الأدمن الجانبية (لتفعيل صلاحية التحميل) ---
-with st.sidebar:
-    st.markdown("### 🔐 لوحة تحكم المسؤول (الأدمن)")
-    admin_password_input = st.text_input("أدخل كلمة مرور الأدمن للتحميل:", type="password", placeholder="أدخل الرقم السري...")
-    
-    ADMIN_SECRET = "Giza2026"  
-    is_admin = (admin_password_input == ADMIN_SECRET)
-    
-    if is_admin:
-        st.success("✅ تم تفعيل صلاحيات الأدمن (التحميل متاح)")
-    else:
-        st.info("ℹ️ وضع الزائر (عرض البيانات فقط بدون تحميل)")
 
 # --- البحث عن ملف اللوجو بصيغ مختلفة ---
 found_logo_path = None
@@ -138,7 +129,7 @@ def load_excel_file(filename):
             return None
     return None
 
-# تحميل الملفات السبعة (بما فيها الملف الجديد لبرامج منصة الوزارة)
+# تحميل الملفات
 df_training = load_excel_file("training.xlsx")
 df_job = load_excel_file("job.xlsx")
 df_cader = load_excel_file("cader.xlsx")
@@ -147,14 +138,35 @@ df_batch1 = load_excel_file("batch1.xlsx")
 df_batch2 = load_excel_file("batch2.xlsx")
 df_cpd = load_excel_file("CPD To 12-5-2026.xlsx")
 
-# حساب أعداد السجلات
+# حساب أعداد السجلات الأساسية
 c_training = len(df_training) if df_training is not None else 0
 c_job = len(df_job) if df_job is not None else 0
 c_cader = len(df_cader) if df_cader is not None else 0
 c_reassign = len(df_reassign) if df_reassign is not None else 0
 c_batch1 = len(df_batch1) if df_batch1 is not None else 0
 c_batch2 = len(df_batch2) if df_batch2 is not None else 0
-c_cpd = len(df_cpd) if df_cpd is not None else 0
+
+# تحليل وتصفية بيانات منصة الوزارة (CPD) بناءً على اسم البرنامج أو عمود البرنامج إذا وجد
+def get_cpd_stats(df, keyword):
+    if df is not None:
+        # افتراض أن عمود اسم البرنامج يحتوي على الكلمة المفتاحية أو البحث في كافة الأعمدة
+        match_mask = df.astype(str).apply(lambda x: x.str.contains(keyword, case=False, na=False)).any(axis=1)
+        sub_df = df[match_mask]
+        total = len(sub_df)
+        
+        # محاولة البحث عن أعمدة الحالة (اجتياز / عدم اجتياز / عدم حضور) إذا كانت موجودة
+        passed = len(sub_df[sub_df.astype(str).apply(lambda x: x.str.contains("اجتياز", case=False, na=False)).any(axis=1)]) if total > 0 else 0
+        failed = len(sub_df[sub_df.astype(str).apply(lambda x: x.str.contains("عدم اجتياز", case=False, na=False)).any(axis=1)]) if total > 0 else 0
+        absent = len(sub_df[sub_df.astype(str).apply(lambda x: x.str.contains("غائب", case=False, na=False) | x.str.contains("عدم حضور", case=False, na=False)).any(axis=1)]) if total > 0 else 0
+        
+        return total, passed, failed, absent
+    return 0, 0, 0, 0
+
+# حساب إحصائيات الأقسام الأربعة لمنصة الوزارة
+cpd_p1_total, cpd_p1_pass, cpd_p1_fail, cpd_p1_abs = get_cpd_stats(df_cpd, "التطبيقات التربوية")
+cpd_p2_total, cpd_p2_pass, cpd_p2_fail, cpd_p2_abs = get_cpd_stats(df_cpd, "مدير/ وكيل إدارة مدرسية")
+cpd_p3_total, cpd_p3_pass, cpd_p3_fail, cpd_p3_abs = get_cpd_stats(df_cpd, "التوجيه الفنى")
+cpd_p4_total, cpd_p4_pass, cpd_p4_fail, cpd_p4_abs = get_cpd_stats(df_cpd, "مدير/ وكيل إدارة تعليميةية" if False else "إدارة تعليمية")
 
 # --- الأزرار الأفقية (Tabs) للتنقل المباشر ---
 selected_section = st.tabs([
@@ -194,17 +206,16 @@ with selected_section[0]:
         check_and_display(df_reassign, "إعادة التعيين (قرار 160)")
         check_and_display(df_batch1, "معلم مساعد الدفعة الأولى")
         check_and_display(df_batch2, "معلم مساعد الدفعة الثانية")
-        check_and_display(df_cpd, "نتيجة برامج منصة الوزارة CPD")
+        check_and_display(df_cpd, "برامج منصة الوزارة CPD")
         st.markdown("---")
 
-    # البطاقات الإحصائية الملونة (منظمة على 3 أعمدة)
+    # البطاقات الإحصائية الملونة للبرامج الأساسية
     st.markdown("### 📌 مؤشرات الإحصاء العامة لبرامج الفرع")
     col1, col2, col3 = st.columns(3)
 
     with col1:
         st.markdown(f'<div class="metric-card-1"><div class="card-title">معد البرامج التدريبية</div><div class="card-number">{c_training}</div></div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-card-4"><div class="card-title">إعادة التعيين (قرار 160)</div><div class="card-number">{c_reassign}</div></div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="metric-card-7"><div class="card-title">منصة الوزارة CPD</div><div class="card-number">{c_cpd}</div></div>', unsafe_allow_html=True)
     with col2:
         st.markdown(f'<div class="metric-card-2"><div class="card-title">المسمى الوظيفي</div><div class="card-number">{c_job}</div></div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-card-5"><div class="card-title">معلم مساعد (الدفعة الأولى)</div><div class="card-number">{c_batch1}</div></div>', unsafe_allow_html=True)
@@ -214,11 +225,67 @@ with selected_section[0]:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # الرسوم البيانية
+    # تقسيم وتحليل بطاقات منصة الوزارة CPD بالتفصيل
+    st.markdown("### 📊 تفصيل إحصاءات برامج منصة الوزارة CPD (2025/2026)")
+    
+    cpd_col1, cpd_col2 = st.columns(2)
+    with cpd_col1:
+        st.markdown(f"""
+            <div class="cpd-card-box">
+                <div class="cpd-title">📚 التطبيقات التربوية للمعلم المساعد 2026/2025</div>
+                <div class="cpd-stats">
+                    <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{cpd_p1_total}</span></div>
+                    <div class="stat-item" style="color: #4ade80;">اجتياز<span>{cpd_p1_pass}</span></div>
+                    <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p1_fail}</span></div>
+                    <div class="stat-item" style="color: #fbbf24;">عدم حضور<span>{cpd_p1_abs}</span></div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown(f"""
+            <div class="cpd-card-box">
+                <div class="cpd-title">👔 تدريب القيادات / التوجيه الفنى 2026/2025</div>
+                <div class="cpd-stats">
+                    <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{cpd_p3_total}</span></div>
+                    <div class="stat-item" style="color: #4ade80;">اجتياز<span>{cpd_p3_pass}</span></div>
+                    <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p3_fail}</span></div>
+                    <div class="stat-item" style="color: #fbbf24;">عدم حضور<span>{cpd_p3_abs}</span></div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with cpd_col2:
+        st.markdown(f"""
+            <div class="cpd-card-box">
+                <div class="cpd-title">🏫 تدريب القيادات مدير/ وكيل إدارة مدرسية 2026/2025</div>
+                <div class="cpd-stats">
+                    <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{cpd_p2_total}</span></div>
+                    <div class="stat-item" style="color: #4ade80;">اجتياز<span>{cpd_p2_pass}</span></div>
+                    <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p2_fail}</span></div>
+                    <div class="stat-item" style="color: #fbbf24;">عدم حضور<span>{cpd_p2_abs}</span></div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown(f"""
+            <div class="cpd-card-box">
+                <div class="cpd-title">🏢 تدريب القيادات مدير/ وكيل إدارة تعليمية 2026/2025</div>
+                <div class="cpd-stats">
+                    <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{cpd_p4_total}</span></div>
+                    <div class="stat-item" style="color: #4ade80;">اجتياز<span>{cpd_p4_pass}</span></div>
+                    <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p4_fail}</span></div>
+                    <div class="stat-item" style="color: #fbbf24;">عدم حضور<span>{cpd_p4_abs}</span></div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # الرسوم البيانية الشاملة
     st.markdown("### 📈 التحليل البصري ومقارنة أعداد السجلات للبرامج")
     chart_data = pd.DataFrame({
-        "البرنامج": ["معد البرامج", "المسمى الوظيفي", "التسكين", "قرار 160", "معلم مساعد 1", "معلم مساعد 2", "منصة الوزارة"],
-        "عدد السجلات": [c_training, c_job, c_cader, c_reassign, c_batch1, c_batch2, c_cpd]
+        "البرنامج": ["معد البرامج", "المسمى الوظيفي", "التسكين", "قرار 160", "معلم مساعد 1", "معلم مساعد 2", "منصة الوزارة CPD"],
+        "عدد السجلات": [c_training, c_job, c_cader, c_reassign, c_batch1, c_batch2, (len(df_cpd) if df_cpd is not None else 0)]
     })
 
     chart = alt.Chart(chart_data).mark_bar(color="#3b82f6", cornerRadiusTopLeft=4, cornerRadiusTopRight=4).encode(
@@ -229,7 +296,7 @@ with selected_section[0]:
 
     st.altair_chart(chart, use_container_width=True)
 
-# دالة لتحويل الداتا فريم إلى CSV للتحميل المباشر
+# دالة لتحويل الداتا فريم إلى CSV للتحميل المباشر (متاح للجميع الآن)
 def convert_df_to_csv(df):
     return df.to_csv(index=True).encode('utf-8-sig')
 
@@ -248,18 +315,17 @@ def render_section(title, df, tab_index):
             
             st.dataframe(display_df, use_container_width=True)
             
-            # 🔒 شرط إظهار زر التحميل للأدمن فقط
-            if is_admin:
-                csv_data = convert_df_to_csv(display_df)
-                st.download_button(
-                    label=f"📥 تنزيل كشف {title} (خاص بالأدمن)",
-                    data=csv_data,
-                    file_name=f"{title}.csv",
-                    mime="text/csv",
-                    key=f"download_{tab_index}"
-                )
+            # زر التحميل المباشر متاح للجميع الآن بعد إزالة قفل الأدمن
+            csv_data = convert_df_to_csv(display_df)
+            st.download_button(
+                label=f"📥 تنزيل كشف {title}",
+                data=csv_data,
+                file_name=f"{title}.csv",
+                mime="text/csv",
+                key=f"download_{tab_index}"
+            )
         else:
-            st.error(f"تعذر العثور على ملف الإكسل الخاص بـ '{title}'. تأكد من رفع الملف باسم `CPD To 12-5-2026.xlsx` في المستودع.")
+            st.error(f"تعذر العثور على ملف الإكسل الخاص بـ '{title}'. تأكد من رفع الملف في المستودع.")
 
 # عرض محتوى كل تبويب تفصيلي
 render_section("معد البرامج التدريبية", df_training, 1)
