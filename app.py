@@ -79,7 +79,9 @@ st.markdown("""
     
     /* بطاقات تفصيلية لبرامج منصة الوزارة */
     .cpd-card-box { background: #1e293b; border: 1px solid #334155; padding: 15px; border-radius: 12px; color: white; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+    .cpd-total-box { background: linear-gradient(135deg, #0f172a 100%, #1e3a8a 0%); border: 2px solid #3b82f6; padding: 18px; border-radius: 14px; color: white; margin-bottom: 25px; box-shadow: 0 8px 16px rgba(0,0,0,0.3); }
     .cpd-title { font-size: 15px; font-weight: bold; color: #38bdf8; margin-bottom: 10px; border-bottom: 1px solid #475569; padding-bottom: 5px; }
+    .cpd-total-title { font-size: 17px; font-weight: bold; color: #facc15; margin-bottom: 12px; border-bottom: 1px solid #3b82f6; padding-bottom: 6px; text-align: center; }
     .cpd-stats { display: flex; justify-content: space-around; text-align: center; font-size: 13px; }
     .stat-item span { display: block; font-size: 16px; font-weight: bold; margin-top: 4px; }
 
@@ -147,7 +149,6 @@ c_batch2 = len(df_batch2) if df_batch2 is not None else 0
 # دالة مطابقة واستخراج الإحصائيات بدقة تامة من عمود البرنامج وعمود النتيجة
 def get_cpd_exact_stats(df, program_keyword):
     if df is not None:
-        # البحث عن عمود البرنامج وعمود النتيجة بشكل مرن
         prog_col = None
         result_col = None
         
@@ -163,17 +164,14 @@ def get_cpd_exact_stats(df, program_keyword):
         if result_col is None:
             result_col = df.columns[-1]
             
-        # تصفية الصفوف الخاصة بالبرنامج المطلوبة
         sub_df = df[df[prog_col].astype(str).str.contains(program_keyword, case=False, na=False)]
         total = len(sub_df)
         
         if total == 0:
             return 0, 0, 0, 0
             
-        # تنظيف وتوحيد نصوص عمود النتيجة للمقارنة الدقيقة
         res_series = sub_df[result_col].astype(str).str.strip()
         
-        # مطابقة دقيقة للنصوص الموضحة في الصورة
         passed = len(sub_df[res_series.str.fullmatch("اجتياز", case=False, na=False) | res_series.str.contains("^اجتياز$", regex=True, na=False)])
         failed = len(sub_df[res_series.str.contains("عدم الاجتياز|عدم اجتياز", case=False, na=False)])
         absent = len(sub_df[res_series.str.contains("عدم الحضور|عدم حضور", case=False, na=False)])
@@ -186,6 +184,12 @@ cpd_p1_total, cpd_p1_pass, cpd_p1_fail, cpd_p1_abs = get_cpd_exact_stats(df_cpd,
 cpd_p2_total, cpd_p2_pass, cpd_p2_fail, cpd_p2_abs = get_cpd_exact_stats(df_cpd, "مدير/ وكيل إدارة مدرسية")
 cpd_p3_total, cpd_p3_pass, cpd_p3_fail, cpd_p3_abs = get_cpd_exact_stats(df_cpd, "التوجيه الفنى")
 cpd_p4_total, cpd_p4_pass, cpd_p4_fail, cpd_p4_abs = get_cpd_exact_stats(df_cpd, "إدارة تعليمية")
+
+# حساب الإجمالي العام لجميع برامج منصة الوزارة
+cpd_grand_total = cpd_p1_total + cpd_p2_total + cpd_p3_total + cpd_p4_total
+cpd_grand_pass = cpd_p1_pass + cpd_p2_pass + cpd_p3_pass + cpd_p4_pass
+cpd_grand_fail = cpd_p1_fail + cpd_p2_fail + cpd_p3_fail + cpd_p4_fail
+cpd_grand_abs = cpd_p1_abs + cpd_p2_abs + cpd_p3_abs + cpd_p4_abs
 
 # --- الأزرار الأفقية (Tabs) للتنقل المباشر ---
 selected_section = st.tabs([
@@ -244,9 +248,22 @@ with selected_section[0]:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # تقسيم وتحليل بطاقات منصة الوزارة CPD بالتفصيل
+    # تقسيم وتحليل بطاقات منصة الوزارة CPD بالتفصيل مع إضافة بطاقة الإجمالي العام في الأعلى
     st.markdown("### 📊 تفصيل إحصاءات برامج منصة الوزارة CPD (2025/2026)")
     
+    # بطاقة الإجمالي العام المجمعة
+    st.markdown(f"""
+        <div class="cpd-total-box">
+            <div class="cpd-total-title">🌟 الإجمالي العام لجميع برامج منصة الوزارة CPD</div>
+            <div class="cpd-stats">
+                <div class="stat-item" style="color: #38bdf8;">إجمالي المتدربين<span>{cpd_grand_total}</span></div>
+                <div class="stat-item" style="color: #4ade80;">إجمالي الاجتياز<span>{cpd_grand_pass}</span></div>
+                <div class="stat-item" style="color: #f87171;">إجمالي عدم الاجتياز<span>{cpd_grand_fail}</span></div>
+                <div class="stat-item" style="color: #fbbf24;">إجمالي عدم الحضور<span>{cpd_grand_abs}</span></div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
     cpd_col1, cpd_col2 = st.columns(2)
     with cpd_col1:
         st.markdown(f"""
