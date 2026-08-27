@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تخصيص واجهة المستخدم وتوسيط العناوين وجعل الخطوط أكبر وأوضح
+# تخصيص واجهة المستخدم وتوسيط العناوين بخطوط كبيرة وواضحة
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -28,7 +28,7 @@ st.markdown("""
         display: none !important;
     }
     
-    /* تصميم الهيدر المركزي المتكامل وبخطوط كبيرة وواضحة في المنتصف */
+    /* تصميم الهيدر المركزي المتكامل */
     .centered-header-container {
         background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
         padding: 30px 20px;
@@ -38,13 +38,10 @@ st.markdown("""
         margin-bottom: 25px;
         text-align: center;
     }
-    .header-logo-icon {
-        font-size: 45px;
-        margin-bottom: 10px;
-    }
     .header-main-title {
-        font-size: 32px !important;
+        font-size: 34px !important;
         font-weight: bold !important;
+        margin-top: 15px !important;
         margin-bottom: 8px !important;
         color: #ffffff !important;
     }
@@ -67,14 +64,27 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- الهيدر المركزي (اللوجو، العنوان الرئيسي بخط كبير، والعنوان الفرعي في المنتصف تماماً) ---
-st.markdown("""
-    <div class="centered-header-container">
-        <div class="header-logo-icon">🏫</div>
-        <div class="header-main-title">الأكاديمية المهنية للمعلمين - فرع الجيزة</div>
-        <div class="header-sub-title">بوابة الخدمات الرقمية وإدارة بيانات المعلمين المتكاملة</div>
-    </div>
-""", unsafe_allow_html=True)
+# --- الهيدر المركزي ---
+st.markdown('<div class="centered-header-container">', unsafe_allow_html=True)
+
+# عرض صورة اللوجو في المنتصف تماماً إذا كانت مرفوعة
+logo_found = False
+for logo_name in ["logo.png", "logo.jpg", "logo.jpeg"]:
+    if os.path.exists(logo_name):
+        col1, col2, col3 = st.columns([2, 1, 2])
+        with col2:
+            st.image(logo_name, width=110)
+        logo_found = True
+        break
+
+if not logo_found:
+    st.markdown('<span style="font-size: 12px; color: #cbd5e1; background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 4px;">📌 برجاء رفع صورة الشعار باسم logo.png لتظهر هنا</span>', unsafe_allow_html=True)
+
+# العناوين في المنتصف بخط كبير وواضح
+st.markdown('<div class="header-main-title">الأكاديمية المهنية للمعلمين - فرع الجيزة</div>', unsafe_allow_html=True)
+st.markdown('<div class="header-sub-title">بوابة الخدمات الرقمية وإدارة بيانات المعلمين المتكاملة</div>', unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
 
 # دالة لتحميل الملفات بالأسماء المضمونة
 def load_excel_file(filename):
