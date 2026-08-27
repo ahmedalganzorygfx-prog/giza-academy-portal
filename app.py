@@ -32,7 +32,7 @@ st.markdown("""
     /* تصميم الهيدر المركزي المتكامل */
     .app-header-box {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        padding: 35px 20px;
+        padding: 30px 20px;
         border-radius: 16px;
         color: white;
         box-shadow: 0 8px 16px rgba(0,0,0,0.2);
@@ -40,11 +40,13 @@ st.markdown("""
         text-align: center;
         border: 1px solid #334155;
     }
+    /* تصغير حجم اللوجو لأقصى حد ممكن */
     .app-logo-img {
-        max-width: 120px;
-        height: auto;
-        margin-bottom: 15px;
-        border-radius: 8px;
+        max-width: 40px !important;
+        width: 40px !important;
+        height: auto !important;
+        margin-bottom: 10px;
+        border-radius: 4px;
     }
     .app-main-title {
         font-size: 36px !important;
@@ -73,7 +75,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- البحث عن ملف اللوجو بصيغ مختلفة (يشمل الحروف الكبيرة وصيغ الـ png و jpg) ---
+# --- البحث عن ملف اللوجو بصيغ مختلفة ---
 found_logo_path = None
 possible_names = ["logo.png", "Logo.png", "LOGO.PNG", "logo.jpg", "Logo.jpg", "LOGO.JPG", "logo.jpeg", "Logo.jpeg"]
 
@@ -82,16 +84,14 @@ for name in possible_names:
         found_logo_path = name
         break
 
-# تجهيز كود عرض اللوجو أو تنبيه في حال لم يتم العثور على الملف بالمجلد
 if found_logo_path:
     with open(found_logo_path, "rb") as img_file:
         encoded_string = base64.b64encode(img_file.read()).decode()
-    # تحديد نوع الصورة تلقائياً
     img_ext = found_logo_path.split('.')[-1].lower()
     mime_type = "image/jpeg" if img_ext in ["jpg", "jpeg"] else "image/png"
     logo_display_html = f'<img src="data:{mime_type};base64,{encoded_string}" class="app-logo-img">'
 else:
-    logo_display_html = '<div style="color: #f87171; font-size: 14px; margin-bottom: 10px; background: rgba(239, 68, 68, 0.1); padding: 8px; border-radius: 6px;">⚠️ تنبيه: لم يتم العثور على ملف الشعار (logo.png). تأكد من رفع صورة الشعار في مجلد المشروع.</div>'
+    logo_display_html = '<div style="color: #f87171; font-size: 12px; margin-bottom: 5px;">⚠️ لم يتم العثور على ملف الشعار</div>'
 
 # عرض الهيدر المركزي المتكامل
 st.markdown(f"""
