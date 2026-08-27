@@ -29,10 +29,10 @@ st.markdown("""
         display: none !important;
     }
     
-    /* تصميم الهيدر المركزي المتكامل (توسيط كامل) */
+    /* تصميم الهيدر المركزي المتكامل مع زيادة المساحة */
     .app-header-box {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        padding: 35px 20px;
+        padding: 40px 20px;
         border-radius: 16px;
         color: white;
         box-shadow: 0 10px 25px rgba(0,0,0,0.3);
@@ -44,30 +44,30 @@ st.markdown("""
         align-items: center;
         justify-content: center;
     }
-    /* تحجيم وتوسيط اللوجو داخل الصندوق */
+    /* تكبير حجم اللوجو بشكل كبير وواضح (180 بكسل) */
     .app-logo-img {
-        width: 100px !important;
-        min-width: 100px !important;
-        max-width: 100px !important;
+        width: 180px !important;
+        min-width: 180px !important;
+        max-width: 180px !important;
         height: auto !important;
-        border-radius: 10px;
+        border-radius: 12px;
         object-fit: contain;
         background: rgba(255, 255, 255, 0.05);
-        padding: 5px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        margin-bottom: 15px;
+        padding: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        margin-bottom: 20px;
     }
     .app-main-title {
-        font-size: 32px !important;
+        font-size: 34px !important;
         font-weight: 800 !important;
-        margin: 0 0 8px 0 !important;
+        margin: 0 0 10px 0 !important;
         color: #ffffff !important;
         letter-spacing: -0.5px;
         line-height: 1.2;
         text-align: center;
     }
     .app-sub-title {
-        font-size: 17px !important;
+        font-size: 18px !important;
         color: #38bdf8 !important;
         font-weight: 600 !important;
         margin: 0 !important;
