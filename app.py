@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تخصيص واجهة المستخدم بالكامل وإلغاء القائمة الجانبية التقليدية
+# تخصيص واجهة المستخدم بالكامل وتصميم الهيدر والشعار
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -27,6 +27,44 @@ st.markdown("""
     [data-testid="collapsedControl"] {
         display: none !important;
     }
+    
+    /* تصميم رأسية العنوان الرئيسية مع الشعار */
+    .main-header-container {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        padding: 20px;
+        border-radius: 12px;
+        color: white;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .header-text {
+        text-align: right;
+        flex-grow: 1;
+    }
+    .header-title {
+        font-size: 22px;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #ffffff;
+    }
+    .header-subtitle {
+        font-size: 14px;
+        color: #94a3b8;
+    }
+    .logo-box {
+        background-color: #ffffff;
+        padding: 8px 15px;
+        border-radius: 8px;
+        color: #1e293b;
+        font-weight: bold;
+        font-size: 13px;
+        text-align: center;
+        border: 2px dashed #3b82f6;
+    }
+
     .metric-card-1 { background: linear-gradient(135deg, #1f4037 0%, #99f2c8 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
     .metric-card-2 { background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
     .metric-card-3 { background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%); padding: 15px; border-radius: 12px; color: #333; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
@@ -36,13 +74,25 @@ st.markdown("""
     .card-title { font-size: 14px !important; font-weight: bold; margin-bottom: 5px; }
     .card-number { font-size: 22px; font-weight: bold; }
     .program-header { font-size: 20px !important; font-weight: bold; color: #1e293b; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-top: 20px; margin-bottom: 15px; }
-    .top-header { background-color: #1e293b; color: white; padding: 14px 15px; border-radius: 8px; text-align: center; font-size: 17px; font-weight: bold; margin-bottom: 20px; }
     .footer-container { text-align: center; padding: 15px; margin-top: 30px; border-top: 1px solid #e2e8f0; color: #475569; font-size: 14px; font-weight: bold; background-color: #f8fafc; border-radius: 8px; }
     </style>
 """, unsafe_allow_html=True)
 
-# عنوان الصفحة العلوي
-st.markdown('<div class="top-header">🏫 الأكاديمية المهنية للمعلمين - فرع الجيزة (بوابة الخدمات الرقمية)</div>', unsafe_allow_html=True)
+# --- العنوان الرئيسي المدمج مع خانة الشعار (Logo) ---
+st.markdown("""
+    <div class="main-header-container">
+        <div class="header-text">
+            <div class="header-title">🏫 الأكاديمية المهنية للمعلمين - فرع الجيزة</div>
+            <div class="header-subtitle">بوابة الخدمات الرقمية وإدارة بيانات المعلمين المتكاملة</div>
+        </div>
+        <div class="logo-box">
+            🖼️ شعار الفرع<br><span style="font-size: 10px; color: #64748b;">(Logo Area)</span>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
+
+# (اختياري) إذا أردت رفع شعار حقيقي كصورة بدلاً من المربع النصي، يمكنك استخدام هذه الدالة مباشرة:
+# st.image("logo.png", width=120)
 
 # دالة ذكية لتحميل الملفات بالأسماء المباشرة الدقيقة
 def load_excel_file(filename):
@@ -72,7 +122,7 @@ c_reassign = len(df_reassign) if df_reassign is not None else 0
 c_batch1 = len(df_batch1) if df_batch1 is not None else 0
 c_batch2 = len(df_batch2) if df_batch2 is not None else 0
 
-# --- استخدام الـ Tabs الأفقية بدلاً من القائمة المنسدلة (Droplist) ---
+# --- الأزرار الأفقية (Tabs) للتنقل المباشر ---
 selected_section = st.tabs([
     "🏠 الرئيسية والبحث الشامل",
     "📁 معد البرامج",
