@@ -144,38 +144,48 @@ c_reassign = len(df_reassign) if df_reassign is not None else 0
 c_batch1 = len(df_batch1) if df_batch1 is not None else 0
 c_batch2 = len(df_batch2) if df_batch2 is not None else 0
 
-# دالة محسّنة لاستخراج إحصائيات برامج منصة الوزارة بدقة من الأعمدة
-def get_cpd_detailed_stats(df, program_keyword):
+# دالة دقيقة لاستخراج إحصائيات برامج منصة الوزارة بالاعتماد على عمود البرنامج وعمود النتيجة
+def get_cpd_exact_stats(df, program_keyword):
     if df is not None:
-        # البحث عن الصفوف التي تخص البرنامج المطلوب
-        prog_mask = df.astype(str).apply(lambda x: x.str.contains(program_keyword, case=False, na=False)).any(axis=1)
-        sub_df = df[prog_mask]
+        # البحث عن عمود البرنامج وعمود النتيجة بغض النظر عن المسافات أو التسميات المقاربة
+        prog_col = None
+        result_col = None
+        
+        for col in df.columns:
+            col_str = str(col).strip()
+            if "البرنامج" in col_str:
+                prog_col = col
+            elif "النتيجة" in col_str or "الحالة" in col_str:
+                result_col = col
+        
+        # إذا لم يتم العثور على الأسماء الصريحة، نبحث في الأعمدة عموماً
+        if prog_col is None:
+            prog_col = df.columns[4] if len(df.columns) > 4 else df.columns[-2]
+        if result_col is None:
+            result_col = df.columns[-1] # عادة عمود النتيجة يكون الأخير
+            
+        # تصفية الصفوف الخاصة بالبرنامج المطلوبة فقط
+        sub_df = df[df[prog_col].astype(str).str.contains(program_keyword, case=False, na=False)]
         total = len(sub_df)
         
         if total == 0:
             return 0, 0, 0, 0
             
-        # دالة مساعدة للبحث عن الحالة داخل صفوف البرنامج المحدد
-        def count_status(keywords):
-            # البحث في كافة الأعمدة الخاصة بالفرع عن الكلمات المفتاحية للحالة (مثل اجتياز، عدم اجتياز، غائب/لم يحضر)
-            match = sub_df.astype(str).apply(lambda x: x.str.contains('|'.join(keywords), case=False, na=False)).any(axis=1)
-            return len(sub_df[match])
-
-        # حساب الاجتياز
-        passed = count_status(["اجتياز", "ناجح", "مجتز"])
-        # حساب عدم الاجتياز
-        failed = count_status(["عدم اجتياز", "راسب", "لم يجتز", "غير مجتز"])
-        # حساب عدم الحضور / الغياب
-        absent = count_status(["عدم حضور", "غائب", "لم يحضر", "معتذر", "تخلف"])
+        # حساب الحالات بدقة من عمود النتيجة
+        res_series = sub_df[result_col].astype(str).str.strip()
+        
+        passed = len(sub_df[res_series.str.contains("اجتياز", case=False, na=False) & ~res_series.str.contains("عدم", case=False, na=False)])
+        failed = len(sub_df[res_series.str.contains("عدم اجتياز|راسب|لم يجتز", case=False, na=False)])
+        absent = len(sub_df[res_series.str.contains("عدم الحضور|غائب|لم يحضر|تخلف", case=False, na=False)])
         
         return total, passed, failed, absent
     return 0, 0, 0, 0
 
-# حساب الإحصائيات الأربع المطلوبة لبرامج منصة الوزارة
-cpd_p1_total, cpd_p1_pass, cpd_p1_fail, cpd_p1_abs = get_cpd_detailed_stats(df_cpd, "التطبيقات التربوية")
-cpd_p2_total, cpd_p2_pass, cpd_p2_fail, cpd_p2_abs = get_cpd_detailed_stats(df_cpd, "مدير/ وكيل إدارة مدرسية")
-cpd_p3_total, cpd_p3_pass, cpd_p3_fail, cpd_p3_abs = get_cpd_detailed_stats(df_cpd, "التوجيه الفنى")
-cpd_p4_total, cpd_p4_pass, cpd_p4_fail, cpd_p4_abs = get_cpd_detailed_stats(df_cpd, "إدارة تعليمية")
+# حساب الإحصائيات الأربع الدقيقة لكل برنامج من منصة الوزارة
+cpd_p1_total, cpd_p1_pass, cpd_p1_fail, cpd_p1_abs = get_cpd_exact_stats(df_cpd, "التطبيقات التربوية")
+cpd_p2_total, cpd_p2_pass, cpd_p2_fail, cpd_p2_abs = get_cpd_exact_stats(df_cpd, "مدير/ وكيل إدارة مدرسية")
+cpd_p3_total, cpd_p3_pass, cpd_p3_fail, cpd_p3_abs = get_cpd_exact_stats(df_cpd, "التوجيه الفنى")
+cpd_p4_total, cpd_p4_pass, cpd_p4_fail, cpd_p4_abs = get_cpd_exact_stats(df_cpd, "إدارة تعليمية")
 
 # --- الأزرار الأفقية (Tabs) للتنقل المباشر ---
 selected_section = st.tabs([
@@ -234,7 +244,7 @@ with selected_section[0]:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # تقسيم وتحليل بطاقات منصة الوزارة CPD بالتفصيل (الإجمالي، الاجتياز، عدم الاجتياز، عدم الحضور)
+    # تقسيم وتحليل بطاقات منصة الوزارة CPD بالتفصيل
     st.markdown("### 📊 تفصيل إحصاءات برامج منصة الوزارة CPD (2025/2026)")
     
     cpd_col1, cpd_col2 = st.columns(2)
