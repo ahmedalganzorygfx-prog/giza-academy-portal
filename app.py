@@ -165,34 +165,44 @@ c_batch1 = len(df_batch1) if df_batch1 is not None else 0
 c_batch2 = len(df_batch2) if df_batch2 is not None else 0
 c_cpd = len(df_cpd) if df_cpd is not None else 0
 
-# دالة لاستخراج عمود التخصص وحساب أعداد كل تخصص تلقائياً
+# دالة لاستخراج وحساب إحصائيات التخصصات والإدارات التعليمية لمعلمي المساعد
 def display_batch_stats_and_table(df, batch_title):
     if df is not None:
         total_records = len(df)
         spec_col = None
+        admin_col = None
+        
         for col in df.columns:
             col_s = str(col).strip()
             if "التخصص" in col_s or "المادة" in col_s or "مادة" in col_s:
                 spec_col = col
-                break
-        
-        # إذا لم يتم العثور على عمود التخصص صراحة، نفترض العمود الثالث أو الرابع
+            elif "الادارة" in col_s or "الإدارة" in col_s:
+                admin_col = col
+
+        # قيم افتراضية للأعمدة إذا لم يتم مطابقتها بالنص بدقة
         if spec_col is None and len(df.columns) > 3:
             spec_col = df.columns[3]
+        if admin_col is None and len(df.columns) > 2:
+            admin_col = df.columns[2]
 
-        if spec_col is not None:
-            spec_counts = df[spec_col].astype(str).str.strip().value_counts()
-            
-            st.markdown(f"""
-                <div class="cpd-total-box">
-                    <div class="cpd-total-title">📊 إحصائيات {batch_title}</div>
-                    <div class="cpd-stats">
-                        <div class="stat-item" style="color: #38bdf8; font-size: 18px;">الإجمالي العام<span>{total_records}</span></div>
-                        <div class="stat-item" style="color: #4ade80; font-size: 18px;">عدد التخصصات<span>{len(spec_counts)}</span></div>
-                    </div>
+        # حساب إحصائيات التخصصات
+        spec_counts = df[spec_col].astype(str).str.strip().value_counts() if spec_col is not None else pd.Series(dtype=int)
+        # حساب إحصائيات الإدارات التعليمية
+        admin_counts = df[admin_col].astype(str).str.strip().value_counts() if admin_col is not None else pd.Series(dtype=int)
+
+        st.markdown(f"""
+            <div class="cpd-total-box">
+                <div class="cpd-total-title">📊 إحصائيات {batch_title}</div>
+                <div class="cpd-stats">
+                    <div class="stat-item" style="color: #38bdf8; font-size: 18px;">الإجمالي العام<span>{total_records}</span></div>
+                    <div class="stat-item" style="color: #4ade80; font-size: 18px;">عدد التخصصات<span>{len(spec_counts)}</span></div>
+                    <div class="stat-item" style="color: #facc15; font-size: 18px;">عدد الإدارات<span>{len(admin_counts)}</span></div>
                 </div>
-            """, unsafe_allow_html=True)
-            
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # عرض تخصصات المعلمين
+        if not spec_counts.empty:
             st.markdown("### 📋 تفصيل أعداد المعلمين بكل تخصص:")
             spec_cols = st.columns(3)
             idx = 0
@@ -205,12 +215,25 @@ def display_batch_stats_and_table(df, batch_title):
                         </div>
                     """, unsafe_allow_html=True)
                 idx += 1
-        else:
-            st.metric(label="إجمالي السجلات", value=total_records)
-            st.warning("⚠️ لم يتم التعرف على عمود التخصص بدقة، يتم عرض الإجمالي العام فقط.")
+            st.markdown("<br>", unsafe_allow_html=True)
+
+        # عرض إدارات المعلمين
+        if not admin_counts.empty:
+            st.markdown("### 🏫 تفصيل أعداد المعلمين بكل إدارة تعليمية:")
+            admin_cols = st.columns(3)
+            idx = 0
+            for admin_name, admin_count in admin_counts.items():
+                with admin_cols[idx % 3]:
+                    st.markdown(f"""
+                        <div class="cpd-card-box">
+                            <div class="cpd-title" style="color: #facc15;">إدارة {admin_name}</div>
+                            <div style="text-align: center; font-size: 20px; font-weight: bold; color: #38bdf8; margin-top: 5px;">{admin_count}</div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                idx += 1
+            st.markdown("<br>", unsafe_allow_html=True)
         
-        st.markdown("<br>", unsafe_allow_html=True)
-        sq = st.text_input(f"🔍 بحث مخصص داخل كشف {batch_title}:")
+        sq = st.text_input(f"🔍 بحث مخصص داخل كشف {batch_title}:", key=f"search_{batch_title}")
         ddf = df
         if sq:
             mask = df.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)
