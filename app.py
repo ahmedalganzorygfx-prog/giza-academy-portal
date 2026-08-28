@@ -3,20 +3,6 @@ import pandas as pd
 import altair as alt
 import os
 import base64
-import io
-
-# استيراد مكتبات توليد الـ PDF ودعم اللغة العربية
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib import colors
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-
-# استيراد مكتبات تصحيح النصوص العربية للـ PDF
-import arabic_reshaper
-from bidi.algorithm import get_display
 
 # إعدادات الصفحة وعرض الواجهة بالشكل العريض
 st.set_page_config(
@@ -25,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تخصيص واجهة المستخدم
+# تخصيص واجهة المستخدم وتعديل لون عناوين الأقسام لتكون واضحة
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -38,6 +24,7 @@ st.markdown("""
         font-size: 16px !important;
     }
     
+    /* حل جذري لمشكلة القائمة الجانبية: إخفاء النصوص تماماً عند تصغيرها */
     [data-testid="stSidebar"][aria-expanded="false"] {
         width: 0px !important;
         min-width: 0px !important;
@@ -49,6 +36,7 @@ st.markdown("""
         display: none !important;
     }
 
+    /* تصميم الهيدر المركزي */
     .app-header-box {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         padding: 20px 15px;
@@ -92,6 +80,7 @@ st.markdown("""
         text-align: center;
     }
 
+    /* البطاقات الإحصائية المصغرة */
     .metric-card-1 { background: linear-gradient(135deg, #1f4037 0%, #99f2c8 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
     .metric-card-2 { background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
     .metric-card-3 { background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%); padding: 10px; border-radius: 10px; color: #333; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
@@ -112,6 +101,7 @@ st.markdown("""
     .card-title { font-size: 12px !important; font-weight: bold; margin-bottom: 3px; }
     .card-number { font-size: 18px; font-weight: bold; }
     
+    /* تصميم وتلوين عنوان القسم (معدل ليظهر بوضوح تام وخلفية جذابة) */
     .program-header { 
         font-size: 16px !important; 
         font-weight: bold; 
@@ -127,136 +117,6 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
-
-# --- إعداد خطوط لغة عربية سليمة لملفات الـ PDF ---
-try:
-    font_paths = ["Cairo-Regular.ttf", "Amiri-Regular.ttf", "arial.ttf", "Tahoma.ttf"]
-    registered_font = False
-    for fpath in font_paths:
-        if os.path.exists(fpath):
-            pdfmetrics.registerFont(TTFont('ArabicFont', fpath))
-            registered_font = True
-            break
-    if not registered_font:
-        sys_arial = "C:/Windows/Fonts/arial.ttf"
-        if os.path.exists(sys_arial):
-            pdfmetrics.registerFont(TTFont('ArabicFont', sys_arial))
-            registered_font = True
-        else:
-            pdfmetrics.registerFont(TTFont('ArabicFont', 'Helvetica'))
-except Exception:
-    pass
-
-def fix_arabic(text):
-    """دالة ذكية ومحدثة لمعالجة وتنسيق النصوص المختلطة (عربي، إنجليزي، رموز) للـ PDF"""
-    if not text:
-        return ""
-    try:
-        text_str = str(text)
-        # استخدام الخوارزمية مع تفعيل الحفاظ على الترتيب المختلط لمنع تقطيع الكلمات والرموز والشرطات
-        reshaped_text = arabic_reshaper.reshape(text_str)
-        bidi_text = get_display(reshaped_text, base_dir='R')
-        return bidi_text
-    except Exception:
-        return str(text)
-
-def generate_pdf_report(title, stats_dict, tables_data=None):
-    """دالة لتوليد ملف PDF احترافي ودقيق باللغة العربية"""
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
-    elements = []
-    
-    styles = getSampleStyleSheet()
-    arabic_font_name = 'ArabicFont' if 'ArabicFont' in pdfmetrics.getRegisteredFontNames() else 'Helvetica'
-    
-    try:
-        title_style = ParagraphStyle(
-            'ArabicTitle',
-            parent=styles['Heading1'],
-            fontName=arabic_font_name,
-            fontSize=15,
-            alignment=1, # Center
-            textColor=colors.HexColor('#0f172a'),
-            spaceAfter=15
-        )
-        subtitle_style = ParagraphStyle(
-            'ArabicSub',
-            parent=styles['Heading2'],
-            fontName=arabic_font_name,
-            fontSize=12,
-            alignment=2, # Right
-            textColor=colors.HexColor('#1e3a8a'),
-            spaceAfter=8
-        )
-        footer_style = ParagraphStyle(
-            'ArabicFooter',
-            parent=styles['Normal'],
-            fontName=arabic_font_name,
-            fontSize=8,
-            alignment=1, # Center
-            textColor=colors.HexColor('#64748b')
-        )
-    except Exception:
-        title_style = styles['Heading1']
-        subtitle_style = styles['Heading2']
-        footer_style = styles['Normal']
-
-    # العنوان الرئيسي للتقرير
-    main_title_text = f"تقرير إحصائيات: {title}"
-    elements.append(Paragraph(fix_arabic(main_title_text), title_style))
-    elements.append(Spacer(1, 10))
-    
-    # جدول الإحصائيات العامة
-    stat_rows = [[fix_arabic("البند الإحصائي"), fix_arabic("القيمة")]]
-    for key, val in stats_dict.items():
-        stat_rows.append([fix_arabic(str(key)), fix_arabic(str(val))])
-        
-    t_stats = Table(stat_rows, colWidths=[320, 130])
-    t_stats.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e293b')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, -1), arabic_font_name),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ('TOPPADDING', (0, 0), (-1, -1), 5),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')])
-    ]))
-    elements.append(t_stats)
-    elements.append(Spacer(1, 15))
-    
-    # الجداول التفصيلية إن وجدت
-    if tables_data:
-        for subtitle, data_dict in tables_data.items():
-            elements.append(Paragraph(fix_arabic(subtitle), subtitle_style))
-            
-            sub_rows = [[fix_arabic("العنصر / التخصص / الإدارة"), fix_arabic("العدد")]]
-            for k, v in data_dict.items():
-                sub_rows.append([fix_arabic(str(k)), fix_arabic(str(v))])
-                
-            t_sub = Table(sub_rows, colWidths=[320, 130])
-            t_sub.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#334155')),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, -1), arabic_font_name),
-                ('FONTSIZE', (0, 0), (-1, -1), 9),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-                ('TOPPADDING', (0, 0), (-1, -1), 4),
-                ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
-                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')])
-            ]))
-            elements.append(t_sub)
-            elements.append(Spacer(1, 10))
-
-    # تذييل التقرير
-    elements.append(Spacer(1, 15))
-    elements.append(Paragraph(fix_arabic("تم استخراج هذا التقرير تلقائياً من بوابة الأكاديمية المهنية للمعلمين - فرع الجيزة"), footer_style))
-
-    doc.build(elements)
-    buffer.seek(0)
-    return buffer.getvalue()
 
 # --- البحث عن ملف اللوجو بصيغ مختلفة ---
 found_logo_path = None
@@ -310,6 +170,7 @@ menu_options = [
 selected_option = st.pills("🗂️ الانتقال السريع بين الأقسام:", menu_options, default=menu_options[0])
 st.markdown("---")
 
+# دالة لتحميل الملفات
 def load_excel_file(filename):
     if uploaded_file_override is not None and uploaded_file_override.name == filename:
         try:
@@ -330,6 +191,7 @@ def load_excel_file(filename):
             return None
     return None
 
+# تحميل الملفات
 df_training = load_excel_file("training.xlsx")
 df_tot = load_excel_file("Accrediation.xlsx")
 df_job = load_excel_file("job.xlsx")
@@ -339,6 +201,7 @@ df_batch1 = load_excel_file("batch1.xlsx")
 df_batch2 = load_excel_file("batch2.xlsx")
 df_cpd = load_excel_file("CPD To 12-5-2026.xlsx")
 
+# حساب أعداد السجلات الأساسية
 c_training = len(df_training) if df_training is not None else 0
 c_tot = len(df_tot) if df_tot is not None else 0
 c_job = len(df_job) if df_job is not None else 0
@@ -348,6 +211,7 @@ c_batch1 = len(df_batch1) if df_batch1 is not None else 0
 c_batch2 = len(df_batch2) if df_batch2 is not None else 0
 c_cpd = len(df_cpd) if df_cpd is not None else 0
 
+# دالة عرض الجدول والبيانات مع زر التصدير (Export)
 def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword="التخصص علي الكادر"):
     if df is not None:
         total_records = len(df)
@@ -389,26 +253,6 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword=
                 </div>
             </div>
         """, unsafe_allow_html=True)
-        
-        pdf_stats_dict = {"إجمالي السجلات": total_records}
-        if has_specs:
-            pdf_stats_dict["عدد التخصصات"] = len(spec_counts)
-        pdf_stats_dict["عدد الإدارات التعليمية"] = len(admin_counts)
-        
-        pdf_tables = {}
-        if has_specs and not spec_counts.empty:
-            pdf_tables["توزيع المعلمين حسب التخصص"] = spec_counts.to_dict()
-        if not admin_counts.empty:
-            pdf_tables["توزيع المعلمين حسب الإدارة التعليمية"] = admin_counts.to_dict()
-            
-        pdf_bytes = generate_pdf_report(batch_title, pdf_stats_dict, pdf_tables)
-        st.download_button(
-            label=f"📄 تحميل تقرير إحصائيات {batch_title} (PDF)",
-            data=pdf_bytes,
-            file_name=f"{batch_title}_stats_report.pdf",
-            mime="application/pdf"
-        )
-        st.markdown("<br>", unsafe_allow_html=True)
         
         if has_specs and not spec_counts.empty:
             st.markdown(f"### 📋 تفصيل أعداد المعلمين بكل تخصص:")
@@ -459,6 +303,7 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword=
     else:
         st.error(f"ملف بيانات {batch_title} غير متوفر. يمكنك رفعه من القائمة الجانبية.")
 
+# دالة استخراج إحصائيات منصة الوزارة CPD
 def get_cpd_exact_stats(df, program_keyword):
     if df is not None:
         prog_col = None
@@ -495,6 +340,7 @@ cpd_grand_pass = cpd_p1_pass + cpd_p2_pass + cpd_p3_pass + cpd_p4_pass
 cpd_grand_fail = cpd_p1_fail + cpd_p2_fail + cpd_p3_fail + cpd_p4_fail
 cpd_grand_abs = cpd_p1_abs + cpd_p2_abs + cpd_p3_abs + cpd_p4_abs
 
+# 1. شاشة الرئيسية والبحث الشامل
 if selected_option == "🏠 الرئيسية والبحث الشامل":
     st.markdown("### 🔎 البحث الشامل بالكود في كافة الملفات والبرامج")
     global_search_code = st.text_input("أدخل كود المعلم للبحث الفوري عنه في جميع الكشوفات:", placeholder="مثال: 3089097")
@@ -524,6 +370,7 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
         check_and_display(df_cpd, "برامج منصة الوزارة CPD")
         st.markdown("---")
 
+    # البطاقات الإحصائية المصغرة والمدمجة
     st.markdown("### 📌 مؤشرات الإحصاء العامة لبرامج الفرع")
     col1, col2, col3 = st.columns(3)
 
@@ -541,6 +388,7 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # تحضير بيانات الرسوم البيانية للأعمدة فقط
     chart_data = pd.DataFrame({
         "البرنامج": ["معد البرامج", "اعتماد TOT", "المسمى الوظيفي", "التسكين", "قرار 160", "معلم مساعد 1", "معلم مساعد 2", "منصة الوزارة CPD"],
         "عدد السجلات": [c_training, c_tot, c_job, c_cader, c_reassign, c_batch1, c_batch2, c_cpd]
@@ -555,6 +403,7 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
     
     st.altair_chart(bar_chart, use_container_width=True)
 
+# 2. عرض قسم "معد البرامج التدريبية"
 elif selected_option == "📁 معد البرامج":
     st.markdown('<p class="program-header">📁 معد البرامج التدريبية</p>', unsafe_allow_html=True)
     if df_training is not None:
@@ -584,19 +433,6 @@ elif selected_option == "📁 معد البرامج":
             </div>
         """, unsafe_allow_html=True)
         
-        tr_pdf_bytes = generate_pdf_report("معد البرامج التدريبية", {
-            "إجمالي السجلات": tr_total,
-            "اجتاز الاعتماد بنجاح": tr_passed,
-            "لم يجتاز الاعتماد": tr_failed
-        })
-        st.download_button(
-            label="📄 تحميل تقرير إحصائيات معد البرامج (PDF)",
-            data=tr_pdf_bytes,
-            file_name="training_stats_report.pdf",
-            mime="application/pdf"
-        )
-        st.markdown("<br>", unsafe_allow_html=True)
-        
         search_query = st.text_input("🔍 بحث مخصص داخل كشف معد البرامج التدريبية:")
         display_df = df_training
         if search_query:
@@ -610,6 +446,7 @@ elif selected_option == "📁 معد البرامج":
     else:
         st.error("تعذر العثور على ملف الإكسل الخاص بـ 'معد البرامج التدريبية' (training.xlsx).")
 
+# 3. عرض قسم "اعتماد TOT"
 elif selected_option == "📁 اعتماد TOT":
     st.markdown('<p class="program-header">📁 اعتماد TOT</p>', unsafe_allow_html=True)
     if df_tot is not None:
@@ -633,15 +470,6 @@ elif selected_option == "📁 اعتماد TOT":
                     </div>
                 </div>
             """, unsafe_allow_html=True)
-            
-            tot_pdf_bytes = generate_pdf_report("اعتماد TOT", {"إجمالي المتقدمين": tot_total, "عدد التخصصات": len(spec_counts)}, {"توزيع التخصصات": spec_counts.to_dict()})
-            st.download_button(
-                label="📄 تحميل تقرير إحصائيات اعتماد TOT (PDF)",
-                data=tot_pdf_bytes,
-                file_name="tot_stats_report.pdf",
-                mime="application/pdf"
-            )
-            st.markdown("<br>", unsafe_allow_html=True)
             
             st.markdown("### 📋 تفصيل أعداد المعلمين بكل تخصص:")
             spec_cols = st.columns(3)
@@ -673,6 +501,7 @@ elif selected_option == "📁 اعتماد TOT":
     else:
         st.error("تعذر العثور على ملف الإكسل الخاص بـ 'اعتماد TOT' (Accrediation.xlsx).")
 
+# 4. عرض قسم "المسمى الوظيفي"
 elif selected_option == "📁 المسمى الوظيفي":
     st.markdown('<p class="program-header">📁 المسمى الوظيفي</p>', unsafe_allow_html=True)
     if df_job is not None:
@@ -713,15 +542,6 @@ elif selected_option == "📁 المسمى الوظيفي":
             </div>
         """, unsafe_allow_html=True)
         
-        job_pdf_bytes = generate_pdf_report("المسمى الوظيفي", {"إجمالي السجلات": job_total, "محافظة الجيزة": giza_count, "خارج الجيزة": ext_count})
-        st.download_button(
-            label="📄 تحميل تقرير إحصائيات المسمى الوظيفي (PDF)",
-            data=job_pdf_bytes,
-            file_name="job_stats_report.pdf",
-            mime="application/pdf"
-        )
-        st.markdown("<br>", unsafe_allow_html=True)
-        
         sq = st.text_input("🔍 بحث مخصص داخل كشف المسمى الوظيفي:")
         ddf = df_job
         if sq:
@@ -735,6 +555,7 @@ elif selected_option == "📁 المسمى الوظيفي":
     else:
         st.error("ملف المسمى الوظيفي (job.xlsx) غير متوفر.")
 
+# بقية الأقسام الأخرى
 elif selected_option == "📁 التسكين علي الكادر":
     st.markdown('<p class="program-header">📁 التسكين علي الكادر</p>', unsafe_allow_html=True)
     display_batch_stats_and_table(df_cader, "التسكين علي الكادر", has_specs=True, spec_keyword="التخصص علي الكادر")
@@ -765,24 +586,6 @@ elif selected_option == "📁 منصة الوزارة CPD":
                 </div>
             </div>
         """, unsafe_allow_html=True)
-
-        cpd_pdf_bytes = generate_pdf_report("منصة الوزارة CPD", {
-            "الإجمالي العام": cpd_grand_total,
-            "إجمالي الاجتياز": cpd_grand_pass,
-            "إجمالي عدم الاجتياز": cpd_grand_fail,
-            "إجمالي الغياب": cpd_grand_abs,
-            "التطبيقات التربوية (إجمالي)": cpd_p1_total,
-            "مدير/وكيل إدارة مدرسية (إجمالي)": cpd_p2_total,
-            "التوجيه الفني (إجمالي)": cpd_p3_total,
-            "إدارة تعليمية (إجمالي)": cpd_p4_total
-        })
-        st.download_button(
-            label="📄 تحميل تقرير إحصائيات منصة الوزارة CPD (PDF)",
-            data=cpd_pdf_bytes,
-            file_name="cpd_stats_report.pdf",
-            mime="application/pdf"
-        )
-        st.markdown("<br>", unsafe_allow_html=True)
 
         cpd_col1, cpd_col2 = st.columns(2)
         with cpd_col1:
