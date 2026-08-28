@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تخصيص واجهة المستخدم والتنسيقات المتناسقة
+# تخصيص واجهة المستخدم والتنسیقات المتناسقة ومعالجة مشكلة القائمة الجانبية
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -23,6 +23,14 @@ st.markdown("""
         text-align: right !important;
     }
     
+    /* حل مشكلة تداخل النصوص عند تصغير القائمة الجانبية */
+    [data-testid="stSidebar"][aria-expanded="false"] {
+        width: 0px !important;
+    }
+    [data-testid="stSidebar"] span {
+        white-space: nowrap;
+    }
+
     /* تصميم الهيدر المركزي المتكامل */
     .app-header-box {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
