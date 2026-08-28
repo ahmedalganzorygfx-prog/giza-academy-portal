@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تخصيص واجهة المستخدم والتنسیقات المتناسقة
+# تخصيص واجهة المستخدم والتنسيقات المتناسقة
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -250,73 +250,6 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # تقسيم وتحليل بطاقات منصة الوزارة CPD بالتفصيل في الرئيسية
-    st.markdown("### 📊 نتيجة منصة CPD حتي 12-5-2026 ")
-    st.markdown(f"""
-        <div class="cpd-total-box">
-            <div class="cpd-total-title">🌟 الإجمالي العام لجميع برامج منصة الوزارة CPD</div>
-            <div class="cpd-stats">
-                <div class="stat-item" style="color: #38bdf8;">إجمالي المتدربين<span>{cpd_grand_total}</span></div>
-                <div class="stat-item" style="color: #4ade80;">إجمالي الاجتياز<span>{cpd_grand_pass}</span></div>
-                <div class="stat-item" style="color: #f87171;">إجمالي عدم الاجتياز<span>{cpd_grand_fail}</span></div>
-                <div class="stat-item" style="color: #fbbf24;">إجمالي عدم الحضور<span>{cpd_grand_abs}</span></div>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-    cpd_col1, cpd_col2 = st.columns(2)
-    with cpd_col1:
-        st.markdown(f"""
-            <div class="cpd-card-box">
-                <div class="cpd-title">📚 التطبيقات التربوية للمعلم المساعد 2026/2025</div>
-                <div class="cpd-stats">
-                    <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{cpd_p1_total}</span></div>
-                    <div class="stat-item" style="color: #4ade80;">اجتياز<span>{cpd_p1_pass}</span></div>
-                    <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p1_fail}</span></div>
-                    <div class="stat-item" style="color: #fbbf24;">عدم حضور<span>{cpd_p1_abs}</span></div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown(f"""
-            <div class="cpd-card-box">
-                <div class="cpd-title">👔 تدريب القيادات / التوجيه الفنى 2026/2025</div>
-                <div class="cpd-stats">
-                    <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{cpd_p3_total}</span></div>
-                    <div class="stat-item" style="color: #4ade80;">اجتياز<span>{cpd_p3_pass}</span></div>
-                    <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p3_fail}</span></div>
-                    <div class="stat-item" style="color: #fbbf24;">عدم حضور<span>{cpd_p3_abs}</span></div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
-    with cpd_col2:
-        st.markdown(f"""
-            <div class="cpd-card-box">
-                <div class="cpd-title">🏫 تدريب القيادات مدير/ وكيل إدارة مدرسية 2026/2025</div>
-                <div class="cpd-stats">
-                    <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{cpd_p2_total}</span></div>
-                    <div class="stat-item" style="color: #4ade80;">اجتياز<span>{cpd_p2_pass}</span></div>
-                    <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p2_fail}</span></div>
-                    <div class="stat-item" style="color: #fbbf24;">عدم حضور<span>{cpd_p2_abs}</span></div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown(f"""
-            <div class="cpd-card-box">
-                <div class="cpd-title">🏢 تدريب القيادات مدير/ وكيل إدارة تعليمية 2026/2025</div>
-                <div class="cpd-stats">
-                    <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{cpd_p4_total}</span></div>
-                    <div class="stat-item" style="color: #4ade80;">اجتياز<span>{cpd_p4_pass}</span></div>
-                    <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p4_fail}</span></div>
-                    <div class="stat-item" style="color: #fbbf24;">عدم حضور<span>{cpd_p4_abs}</span></div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
     # الرسوم البيانية الشاملة
     st.markdown("### 📈 التحليل البصري ومقارنة أعداد السجلات للبرامج")
     chart_data = pd.DataFrame({
@@ -521,7 +454,6 @@ elif selected_option == "📁 ملفات معلم مساعد الدفعة 2":
 elif selected_option == "📁 منصة الوزارة CPD":
     st.markdown('<p class="program-header">📊 إحصائيات نتيجة منصة CPD حتي 12-5-2026</p>', unsafe_allow_html=True)
     if df_cpd is not None:
-        # عرض البطاقات الإحصائية المطابقة للصورة تماماً عند الضغط على قسم منصة الوزارة CPD
         st.markdown(f"""
             <div class="cpd-total-box">
                 <div class="cpd-total-title">🌟 الإجمالي العام لجميع برامج منصة الوزارة CPD</div>
