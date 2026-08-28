@@ -165,6 +165,61 @@ c_batch1 = len(df_batch1) if df_batch1 is not None else 0
 c_batch2 = len(df_batch2) if df_batch2 is not None else 0
 c_cpd = len(df_cpd) if df_cpd is not None else 0
 
+# دالة لاستخراج عمود التخصص وحساب أعداد كل تخصص تلقائياً
+def display_batch_stats_and_table(df, batch_title):
+    if df is not None:
+        total_records = len(df)
+        spec_col = None
+        for col in df.columns:
+            col_s = str(col).strip()
+            if "التخصص" in col_s or "المادة" in col_s or "مادة" in col_s:
+                spec_col = col
+                break
+        
+        # إذا لم يتم العثور على عمود التخصص صراحة، نفترض العمود الثالث أو الرابع
+        if spec_col is None and len(df.columns) > 3:
+            spec_col = df.columns[3]
+
+        if spec_col is not None:
+            spec_counts = df[spec_col].astype(str).str.strip().value_counts()
+            
+            st.markdown(f"""
+                <div class="cpd-total-box">
+                    <div class="cpd-total-title">📊 إحصائيات {batch_title}</div>
+                    <div class="cpd-stats">
+                        <div class="stat-item" style="color: #38bdf8; font-size: 18px;">الإجمالي العام<span>{total_records}</span></div>
+                        <div class="stat-item" style="color: #4ade80; font-size: 18px;">عدد التخصصات<span>{len(spec_counts)}</span></div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("### 📋 تفصيل أعداد المعلمين بكل تخصص:")
+            spec_cols = st.columns(3)
+            idx = 0
+            for spec_name, spec_count in spec_counts.items():
+                with spec_cols[idx % 3]:
+                    st.markdown(f"""
+                        <div class="cpd-card-box">
+                            <div class="cpd-title">{spec_name}</div>
+                            <div style="text-align: center; font-size: 20px; font-weight: bold; color: #4ade80; margin-top: 5px;">{spec_count}</div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                idx += 1
+        else:
+            st.metric(label="إجمالي السجلات", value=total_records)
+            st.warning("⚠️ لم يتم التعرف على عمود التخصص بدقة، يتم عرض الإجمالي العام فقط.")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        sq = st.text_input(f"🔍 بحث مخصص داخل كشف {batch_title}:")
+        ddf = df
+        if sq:
+            mask = df.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)
+            ddf = df[mask]
+            st.info(f"عدد النتائج المطابقة للبحث: {len(ddf)}")
+        st.dataframe(ddf, use_container_width=True)
+    else:
+        st.error(f"ملف بيانات {batch_title} غير متوفر.")
+
 # دالة استخراج إحصائيات منصة الوزارة CPD
 def get_cpd_exact_stats(df, program_keyword):
     if df is not None:
@@ -432,24 +487,12 @@ elif selected_option == "📁 قرار 160":
         st.error("الملف غير متوفر.")
 
 elif selected_option == "📁 ملفات معلم مساعد الدفعة 1":
-    st.markdown('<p class="program-header">📁 معلم مساعد الدفعة الأولى</p>', unsafe_allow_html=True)
-    if df_batch1 is not None:
-        st.metric(label="إجمالي السجلات", value=len(df_batch1))
-        sq = st.text_input("بحث مخصص:")
-        ddf = df_batch1[df_batch1.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)] if sq else df_batch1
-        st.dataframe(ddf, use_container_width=True)
-    else:
-        st.error("الملف غير متوفر.")
+    st.markdown('<p class="program-header">📁 ملفات معلم مساعد الدفعة الأولى</p>', unsafe_allow_html=True)
+    display_batch_stats_and_table(df_batch1, "معلم مساعد الدفعة الأولى")
 
 elif selected_option == "📁 ملفات معلم مساعد الدفعة 2":
-    st.markdown('<p class="program-header">📁 معلم مساعد الدفعة الثانية</p>', unsafe_allow_html=True)
-    if df_batch2 is not None:
-        st.metric(label="إجمالي السجلات", value=len(df_batch2))
-        sq = st.text_input("بحث مخصص:")
-        ddf = df_batch2[df_batch2.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)] if sq else df_batch2
-        st.dataframe(ddf, use_container_width=True)
-    else:
-        st.error("الملف غير متوفر.")
+    st.markdown('<p class="program-header">📁 ملفات معلم مساعد الدفعة الثانية</p>', unsafe_allow_html=True)
+    display_batch_stats_and_table(df_batch2, "معلم مساعد الدفعة الثانية")
 
 elif selected_option == "📁 منصة الوزارة CPD":
     st.markdown('<p class="program-header">📊 إحصائيات نتيجة منصة CPD حتي 12-5-2026</p>', unsafe_allow_html=True)
