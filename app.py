@@ -4,15 +4,14 @@ import altair as alt
 import os
 import base64
 
-# إعدادات الصفحة
+# إعدادات الصفحة وعرض الواجهة بالشكل العريض
 st.set_page_config(
     page_title="بوابة الأكاديمية المهنية للمعلمين - فرع الجيزة", 
     page_icon="🏫", 
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
 
-# تخصيص واجهة المستخدم والتنسيقات لمنع طي القائمة الجانبية وتداخل النصوص
+# تخصيص واجهة المستخدم والتنسيقات المتناسقة
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -24,18 +23,6 @@ st.markdown("""
         text-align: right !important;
     }
     
-    /* منع طي أو انكماش الشريط الجانبي نهائياً وحل مشكلة تداخل الحروف */
-    [data-testid="collapsedControl"] {
-        display: none !important;
-    }
-    section[data-testid="stSidebar"] {
-        width: 300px !important;
-        min-width: 300px !important;
-    }
-    header[data-testid="stHeader"] button {
-        display: none !important;
-    }
-    
     /* تصميم الهيدر المركزي المتكامل */
     .app-header-box {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
@@ -43,7 +30,7 @@ st.markdown("""
         border-radius: 16px;
         color: white;
         box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        margin-bottom: 30px;
+        margin-bottom: 20px;
         border: 1px solid #334155;
         text-align: center;
         display: flex;
@@ -118,6 +105,7 @@ if found_logo_path:
 else:
     logo_display_html = '<div style="color: #f87171; font-size: 12px; margin-bottom: 10px;">⚠️ لم يتم العثور على الشعار</div>'
 
+# عرض الهيدر الرئيسي
 st.markdown(f"""
     <div class="app-header-box">
         {logo_display_html}
@@ -125,6 +113,22 @@ st.markdown(f"""
         <div class="app-sub-title">بوابة الخدمات الرقمية وإدارة بيانات المعلمين المتكاملة</div>
     </div>
 """, unsafe_allow_html=True)
+
+# --- القائمة الرئيسية الأفقية تحت العنوان الرئيسي مباشرة ---
+menu_options = [
+    "🏠 الرئيسية والبحث الشامل",
+    "📁 معد البرامج",
+    "📁 المسمى الوظيفي",
+    "📁 التسكين علي الكادر",
+    "📁 قرار 160",
+    "📁 ملفات معلم مساعد الدفعة 1",
+    "📁 ملفات معلم مساعد الدفعة 2",
+    "📁 منصة الوزارة CPD"
+]
+
+# استخدام st.pills لعرض القائمة بشكل أفقّي أنيق تفاعلي تحت الهيدر
+selected_option = st.pills("🗂️ الانتقال السريع بين الأقسام:", menu_options, default=menu_options[0])
+st.markdown("---")
 
 # دالة لتحميل الملفات
 def load_excel_file(filename):
@@ -199,22 +203,6 @@ cpd_grand_total = cpd_p1_total + cpd_p2_total + cpd_p3_total + cpd_p4_total
 cpd_grand_pass = cpd_p1_pass + cpd_p2_pass + cpd_p3_pass + cpd_p4_pass
 cpd_grand_fail = cpd_p1_fail + cpd_p2_fail + cpd_p3_fail + cpd_p4_fail
 cpd_grand_abs = cpd_p1_abs + cpd_p2_abs + cpd_p3_abs + cpd_p4_abs
-
-# --- قائمة منسدلة (Drop-down list) للتنقل بين الأقسام داخل الشريط الجانبي ---
-st.sidebar.markdown("### 🗂️ القائمة الرئيسية")
-selected_option = st.sidebar.selectbox(
-    "اختر القسم المطلوب للانتقال إليه:",
-    [
-        "🏠 الرئيسية والبحث الشامل",
-        "📁 معد البرامج",
-        "📁 المسمى الوظيفي",
-        "📁 التسكين علي الكادر",
-        "📁 قرار 160",
-        "📁 ملفات معلم مساعد الدفعة 1",
-        "📁 ملفات معلم مساعد الدفعة 2",
-        "📁 منصة الوزارة CPD"
-    ]
-)
 
 # 1. شاشة الرئيسية والمؤشرات العامة والبحث الشامل
 if selected_option == "🏠 الرئيسية والبحث الشامل":
@@ -345,7 +333,7 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
 
     st.altair_chart(chart, use_container_width=True)
 
-# دالة عرض الأقسام التفصيلية بناءً على اختيار القائمة المنسدلة
+# دالة عرض الأقسام التفصيلية بناءً على اختيار القائمة الأفقية
 def render_section_by_dropdown(title, df):
     st.markdown(f'<p class="program-header">📁 {title}</p>', unsafe_allow_html=True)
     if df is not None:
@@ -361,7 +349,7 @@ def render_section_by_dropdown(title, df):
     else:
         st.error(f"تعذر العثور على ملف الإكسل الخاص بـ '{title}'. تأكد من رفع الملف في المستودع.")
 
-# عرض القسم المختيار من القائمة المنسدلة
+# عرض القسم المختيار من القائمة الأفقية
 if selected_option == "📁 معد البرامج":
     render_section_by_dropdown("معد البرامج التدريبية", df_training)
 elif selected_option == "📁 المسمى الوظيفي":
