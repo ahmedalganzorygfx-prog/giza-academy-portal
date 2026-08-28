@@ -138,7 +138,6 @@ try:
             registered_font = True
             break
     if not registered_font:
-        # محاولة البحث عن خطوط النظام الشائعة في ويندوز
         sys_arial = "C:/Windows/Fonts/arial.ttf"
         if os.path.exists(sys_arial):
             pdfmetrics.registerFont(TTFont('ArabicFont', sys_arial))
@@ -149,42 +148,53 @@ except Exception:
     pass
 
 def fix_arabic(text):
-    """دالة عكس الكلمات العربية إذا تطلب الأمر لضمان ظهورها بشكل سليم في تقارير الـ PDF البسيطة"""
+    """دالة معالجة النصوص للـ PDF"""
     return str(text)
 
 def generate_pdf_report(title, stats_dict, tables_data=None):
-    """دالة لتوليد ملف PDF احترافي للإحصائيات"""
+    """دالة لتوليد ملف PDF احترافي للإحصائيات بدون أخطاء باراجراف"""
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
     elements = []
     
     styles = getSampleStyleSheet()
+    arabic_font_name = 'ArabicFont' if 'ArabicFont' in pdfmetrics.getRegisteredFontNames() else 'Helvetica'
     
-    # محاولة ضبط الـ Style للخط العربي
     try:
         title_style = ParagraphStyle(
             'ArabicTitle',
             parent=styles['Heading1'],
-            fontName='ArabicFont',
-            fontSize=18,
+            fontName=arabic_font_name,
+            fontSize=16,
             alignment=1, # Center
             textColor=colors.HexColor('#0f172a'),
             spaceAfter=15
         )
-        normal_style = ParagraphStyle(
-            'ArabicNormal',
-            parent=styles['Normal'],
-            fontName='ArabicFont',
-            fontSize=12,
+        subtitle_style = ParagraphStyle(
+            'ArabicSub',
+            parent=styles['Heading2'],
+            fontName=arabic_font_name,
+            fontSize=13,
             alignment=2, # Right
-            textColor=colors.HexColor('#334155'),
+            textColor=colors.HexColor('#1e3a8a'),
             spaceAfter=8
+        )
+        footer_style = ParagraphStyle(
+            'ArabicFooter',
+            parent=styles['Normal'],
+            fontName=arabic_font_name,
+            fontSize=9,
+            alignment=1, # Center
+            textColor=colors.HexColor('#64748b')
         )
     except Exception:
         title_style = styles['Heading1']
-        normal_style = styles['Normal']
+        subtitle_style = styles['Heading2']
+        footer_style = styles['Normal']
 
-    elements.append(Paragraph(fix_arabic(f"تقرير إحصائيات: {title}"), title_style))
+    # العنوان الرئيسي للتقرير
+    main_title_text = f"تقرير إحصائيات: {title}"
+    elements.append(Paragraph(fix_arabic(main_title_text), title_style))
     elements.append(Spacer(1, 10))
     
     # إضافة الإحصائيات العامة كجدول منظم
@@ -197,7 +207,7 @@ def generate_pdf_report(title, stats_dict, tables_data=None):
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e293b')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, -1), 'ArabicFont' if 'ArabicFont' in pdfmetrics.getRegisteredFontNames() else 'Helvetica'),
+        ('FONTNAME', (0, 0), (-1, -1), arabic_font_name),
         ('FONTSIZE', (0, 0), (-1, -1), 11),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
         ('TOPPADDING', (0, 0), (-1, -1), 6),
@@ -210,7 +220,7 @@ def generate_pdf_report(title, stats_dict, tables_data=None):
     # إضافة الجداول التفصيلية (مثل التخصصات أو الإدارات إذا وجدت)
     if tables_data:
         for subtitle, data_dict in tables_data.items():
-            elements.append(Paragraph(fix_arabic(subtitle), ParagraphStyle('Sub', fontName='ArabicFont' if 'ArabicFont' in pdfmetrics.getRegisteredFontNames() else 'Helvetica', fontSize=14, textColor=colors.HexColor('#1e3a8a'), alignment=2, spaceAfter=8)))
+            elements.append(Paragraph(fix_arabic(subtitle), subtitle_style))
             
             sub_rows = [[fix_arabic("العنصر / التخصص / الإدارة"), fix_arabic("العدد")]]
             for k, v in data_dict.items():
@@ -221,7 +231,7 @@ def generate_pdf_report(title, stats_dict, tables_data=None):
                 ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#334155')),
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
                 ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, -1), 'ArabicFont' if 'ArabicFont' in pdfmetrics.getRegisteredFontNames() else 'Helvetica'),
+                ('FONTNAME', (0, 0), (-1, -1), arabic_font_name),
                 ('FONTSIZE', (0, 0), (-1, -1), 10),
                 ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
                 ('TOPPADDING', (0, 0), (-1, -1), 5),
@@ -233,7 +243,7 @@ def generate_pdf_report(title, stats_dict, tables_data=None):
 
     # ذيل التقرير
     elements.append(Spacer(1, 20))
-    elements.append(Paragraph(fix_arabic("تم استخراج هذا التقرير تلقائياً من بوابة الأكاديمية المهنية للمعلمين - فرع الجيزة"), ParagraphStyle('Footer', fontName='ArabicFont' if 'ArabicFont' in pdfmetrics.getRegisteredFontNames() else 'Helvetica', fontSize=9, textColor=colors.HexColor('#64748b'), alignment=1)))
+    elements.append(Paragraph(fix_arabic("تم استخراج هذا التقرير تلقائياً من بوابة الأكاديمية المهنية للمعلمين - فرع الجيزة"), footer_style))
 
     doc.build(elements)
     buffer.seek(0)
