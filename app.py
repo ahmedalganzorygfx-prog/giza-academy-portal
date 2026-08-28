@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تخصيص واجهة المستخدم والتنسیقات المتناسقة ومعالجة مشكلة القائمة الجانبية
+# تخصيص واجهة المستخدم وتصغير العناوين والبطاقات وحل مشكلة القائمة الجانبية تماماً
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -21,24 +21,29 @@ st.markdown("""
     h3, .stMarkdown h3 {
         direction: rtl !important;
         text-align: right !important;
+        font-size: 16px !important;
     }
     
-    /* حل مشكلة تداخل النصوص عند تصغير القائمة الجانبية */
+    /* حل جذري لمشكلة القائمة الجانبية: إخفاء النصوص تماماً عند تصغيرها لتجنب الحروف العمودية */
     [data-testid="stSidebar"][aria-expanded="false"] {
         width: 0px !important;
+        min-width: 0px !important;
     }
-    [data-testid="stSidebar"] span {
-        white-space: nowrap;
+    [data-testid="stSidebar"][aria-expanded="false"] span, 
+    [data-testid="stSidebar"][aria-expanded="false"] p,
+    [data-testid="stSidebar"][aria-expanded="false"] label,
+    [data-testid="stSidebar"][aria-expanded="false"] div {
+        display: none !important;
     }
 
-    /* تصميم الهيدر المركزي المتكامل */
+    /* تصميم الهيدر المركزي المتكامل بتشغيل مساحة أصغر */
     .app-header-box {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        padding: 40px 20px;
-        border-radius: 16px;
+        padding: 20px 15px;
+        border-radius: 12px;
         color: white;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        margin-bottom: 20px;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        margin-bottom: 15px;
         border: 1px solid #334155;
         text-align: center;
         display: flex;
@@ -47,54 +52,55 @@ st.markdown("""
         justify-content: center;
     }
     .app-logo-img {
-        width: 180px !important;
-        min-width: 180px !important;
-        max-width: 180px !important;
+        width: 130px !important;
+        min-width: 130px !important;
+        max-width: 130px !important;
         height: auto !important;
-        border-radius: 12px;
+        border-radius: 10px;
         object-fit: contain;
         background: rgba(255, 255, 255, 0.05);
-        padding: 8px;
+        padding: 6px;
         border: 1px solid rgba(255, 255, 255, 0.15);
-        margin-bottom: 20px;
+        margin-bottom: 12px;
     }
     .app-main-title {
-        font-size: 34px !important;
+        font-size: 24px !important;
         font-weight: 800 !important;
-        margin: 0 0 10px 0 !important;
+        margin: 0 0 6px 0 !important;
         color: #ffffff !important;
         letter-spacing: -0.5px;
         line-height: 1.2;
         text-align: center;
     }
     .app-sub-title {
-        font-size: 18px !important;
+        font-size: 14px !important;
         color: #38bdf8 !important;
         font-weight: 600 !important;
         margin: 0 !important;
         text-align: center;
     }
 
-    .metric-card-1 { background: linear-gradient(135deg, #1f4037 0%, #99f2c8 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
-    .metric-card-2 { background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
-    .metric-card-3 { background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%); padding: 15px; border-radius: 12px; color: #333; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
-    .metric-card-4 { background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
-    .metric-card-5 { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
-    .metric-card-6 { background: linear-gradient(135deg, #cb356b 0%, #bd3f32 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
-    .metric-card-7 { background: linear-gradient(135deg, #3a7bd5 0%, #3a6073 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
-    .metric-card-8 { background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
-    .metric-card-9 { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
+    /* تصغير البطاقات الإحصائية لتوفير مساحة أوسع */
+    .metric-card-1 { background: linear-gradient(135deg, #1f4037 0%, #99f2c8 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
+    .metric-card-2 { background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
+    .metric-card-3 { background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%); padding: 10px; border-radius: 10px; color: #333; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
+    .metric-card-4 { background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
+    .metric-card-5 { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
+    .metric-card-6 { background: linear-gradient(135deg, #cb356b 0%, #bd3f32 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
+    .metric-card-7 { background: linear-gradient(135deg, #3a7bd5 0%, #3a6073 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
+    .metric-card-8 { background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
+    .metric-card-9 { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
     
-    .cpd-card-box { background: #1e293b; border: 1px solid #334155; padding: 15px; border-radius: 12px; color: white; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-    .cpd-total-box { background: linear-gradient(135deg, #0f172a 100%, #1e3a8a 0%); border: 2px solid #3b82f6; padding: 18px; border-radius: 14px; color: white; margin-bottom: 25px; box-shadow: 0 8px 16px rgba(0,0,0,0.3); }
-    .cpd-title { font-size: 15px; font-weight: bold; color: #38bdf8; margin-bottom: 10px; border-bottom: 1px solid #475569; padding-bottom: 5px; }
-    .cpd-total-title { font-size: 17px; font-weight: bold; color: #facc15; margin-bottom: 12px; border-bottom: 1px solid #3b82f6; padding-bottom: 6px; text-align: center; }
-    .cpd-stats { display: flex; justify-content: space-around; text-align: center; font-size: 13px; }
-    .stat-item span { display: block; font-size: 16px; font-weight: bold; margin-top: 4px; }
+    .cpd-card-box { background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 10px; color: white; margin-bottom: 10px; box-shadow: 0 3px 5px rgba(0,0,0,0.15); }
+    .cpd-total-box { background: linear-gradient(135deg, #0f172a 100%, #1e3a8a 0%); border: 1.5px solid #3b82f6; padding: 12px; border-radius: 10px; color: white; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+    .cpd-title { font-size: 13px; font-weight: bold; color: #38bdf8; margin-bottom: 6px; border-bottom: 1px solid #475569; padding-bottom: 4px; }
+    .cpd-total-title { font-size: 14px; font-weight: bold; color: #facc15; margin-bottom: 8px; border-bottom: 1px solid #3b82f6; padding-bottom: 4px; text-align: center; }
+    .cpd-stats { display: flex; justify-content: space-around; text-align: center; font-size: 12px; }
+    .stat-item span { display: block; font-size: 14px; font-weight: bold; margin-top: 2px; }
 
-    .card-title { font-size: 14px !important; font-weight: bold; margin-bottom: 5px; }
-    .card-number { font-size: 22px; font-weight: bold; }
-    .program-header { font-size: 20px !important; font-weight: bold; color: #1e293b; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-top: 20px; margin-bottom: 15px; }
+    .card-title { font-size: 12px !important; font-weight: bold; margin-bottom: 3px; }
+    .card-number { font-size: 18px; font-weight: bold; }
+    .program-header { font-size: 16px !important; font-weight: bold; color: #1e293b; border-bottom: 2px solid #3b82f6; padding-bottom: 6px; margin-top: 15px; margin-bottom: 10px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -114,9 +120,9 @@ if found_logo_path:
     mime_type = "image/jpeg" if img_ext in ["jpg", "jpeg"] else "image/png"
     logo_display_html = f'<img src="data:{mime_type};base64,{encoded_string}" class="app-logo-img">'
 else:
-    logo_display_html = '<div style="color: #f87171; font-size: 12px; margin-bottom: 10px;">⚠️ لم يتم العثور على الشعار</div>'
+    logo_display_html = '<div style="color: #f87171; font-size: 11px; margin-bottom: 8px;">⚠️ لم يتم العثور على الشعار</div>'
 
-# عرض الهيدر الرئيسي
+# عرض الهيدر الرئيسي المصغر والمدمج
 st.markdown(f"""
     <div class="app-header-box">
         {logo_display_html}
@@ -220,10 +226,10 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword=
         spec_counts = df[spec_col].astype(str).str.strip().value_counts() if (has_specs and spec_col is not None) else pd.Series(dtype=int)
         admin_counts = df[admin_col].astype(str).str.strip().value_counts() if admin_col is not None else pd.Series(dtype=int)
 
-        stats_html = f'<div class="stat-item" style="color: #38bdf8; font-size: 18px;">الإجمالي العام<span>{total_records}</span></div>'
+        stats_html = f'<div class="stat-item" style="color: #38bdf8; font-size: 14px;">الإجمالي العام<span>{total_records}</span></div>'
         if has_specs:
-            stats_html += f'<div class="stat-item" style="color: #4ade80; font-size: 18px;">عدد التخصصات<span>{len(spec_counts)}</span></div>'
-        stats_html += f'<div class="stat-item" style="color: #facc15; font-size: 18px;">عدد الإدارات<span>{len(admin_counts)}</span></div>'
+            stats_html += f'<div class="stat-item" style="color: #4ade80; font-size: 14px;">عدد التخصصات<span>{len(spec_counts)}</span></div>'
+        stats_html += f'<div class="stat-item" style="color: #facc15; font-size: 14px;">عدد الإدارات<span>{len(admin_counts)}</span></div>'
 
         st.markdown(f"""
             <div class="cpd-total-box">
@@ -243,7 +249,7 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword=
                     st.markdown(f"""
                         <div class="cpd-card-box">
                             <div class="cpd-title">{spec_name}</div>
-                            <div style="text-align: center; font-size: 20px; font-weight: bold; color: #4ade80; margin-top: 5px;">{spec_count}</div>
+                            <div style="text-align: center; font-size: 16px; font-weight: bold; color: #4ade80; margin-top: 3px;">{spec_count}</div>
                         </div>
                     """, unsafe_allow_html=True)
                 idx += 1
@@ -258,7 +264,7 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword=
                     st.markdown(f"""
                         <div class="cpd-card-box">
                             <div class="cpd-title" style="color: #facc15;">إدارة {admin_name}</div>
-                            <div style="text-align: center; font-size: 20px; font-weight: bold; color: #38bdf8; margin-top: 5px;">{admin_count}</div>
+                            <div style="text-align: center; font-size: 16px; font-weight: bold; color: #38bdf8; margin-top: 3px;">{admin_count}</div>
                         </div>
                     """, unsafe_allow_html=True)
                 idx += 1
@@ -271,7 +277,6 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword=
             ddf = df[mask]
             st.info(f"عدد النتائج المطابقة للبحث: {len(ddf)}")
         
-        # زر تحميل وتصدير النتائج إلى CSV
         csv_data = ddf.to_csv(index=False).encode('utf-8-sig')
         st.download_button(
             label=f"📥 تصدير النتائج الحالية لملف CSV ({len(ddf)} سجل)",
@@ -351,7 +356,7 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
         check_and_display(df_cpd, "برامج منصة الوزارة CPD")
         st.markdown("---")
 
-    # البطاقات الإحصائية الملونة للبرامج الأساسية
+    # البطاقات الإحصائية المصغرة والمدمجة
     st.markdown("### 📌 مؤشرات الإحصاء العامة لبرامج الفرع")
     col1, col2, col3 = st.columns(3)
 
@@ -376,11 +381,11 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
     })
 
     st.markdown("### 📊 مقارنة أعداد السجلات (الأعمدة البيانية)")
-    bar_chart = alt.Chart(chart_data).mark_bar(color="#3b82f6", cornerRadiusTopLeft=6, cornerRadiusTopRight=6).encode(
-        x=alt.X("البرنامج:N", sort=None, title="", axis=alt.Axis(labelAngle=0, labelFontSize=12)),
+    bar_chart = alt.Chart(chart_data).mark_bar(color="#3b82f6", cornerRadiusTopLeft=5, cornerRadiusTopRight=5).encode(
+        x=alt.X("البرنامج:N", sort=None, title="", axis=alt.Axis(labelAngle=0, labelFontSize=11)),
         y=alt.Y("عدد السجلات:Q", title="إجمالي السجلات"),
         tooltip=["البرنامج", "عدد السجلات"]
-    ).properties(height=380)
+    ).properties(height=300)
     
     st.altair_chart(bar_chart, use_container_width=True)
 
@@ -446,8 +451,8 @@ elif selected_option == "📁 اعتماد TOT":
                 <div class="cpd-total-box">
                     <div class="cpd-total-title">🌟 إحصائيات برنامج اعتماد TOT</div>
                     <div class="cpd-stats">
-                        <div class="stat-item" style="color: #38bdf8; font-size: 18px;">إجمالي المتقدمين<span>{tot_total}</span></div>
-                        <div class="stat-item" style="color: #4ade80; font-size: 18px;">عدد التخصصات<span>{len(spec_counts)}</span></div>
+                        <div class="stat-item" style="color: #38bdf8; font-size: 14px;">إجمالي المتقدمين<span>{tot_total}</span></div>
+                        <div class="stat-item" style="color: #4ade80; font-size: 14px;">عدد التخصصات<span>{len(spec_counts)}</span></div>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
@@ -460,7 +465,7 @@ elif selected_option == "📁 اعتماد TOT":
                     st.markdown(f"""
                         <div class="cpd-card-box">
                             <div class="cpd-title">{spec_name}</div>
-                            <div style="text-align: center; font-size: 20px; font-weight: bold; color: #4ade80; margin-top: 5px;">{spec_count}</div>
+                            <div style="text-align: center; font-size: 16px; font-weight: bold; color: #4ade80; margin-top: 3px;">{spec_count}</div>
                         </div>
                     """, unsafe_allow_html=True)
                 idx += 1
@@ -517,8 +522,8 @@ elif selected_option == "📁 المسمى الوظيفي":
                 <div class="cpd-total-title">📊 إحصائيات برنامج المسمى الوظيفي</div>
                 <div class="cpd-stats">
                     <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{job_total}</span></div>
-                    <div class="stat-item" style="color: #4ade80;">إجمالي محافظة الجيزة<span>{giza_count}</span></div>
-                    <div class="stat-item" style="color: #f87171;">إجمالي المنتدبين (من خارج الجيزة)<span>{ext_count}</span></div>
+                    <div class="stat-item" style="color: #4ade80;">محافظة الجيزة<span>{giza_count}</span></div>
+                    <div class="stat-item" style="color: #f87171;">خارج الجيزة<span>{ext_count}</span></div>
                 </div>
             </div>
         """, unsafe_allow_html=True)
@@ -560,10 +565,10 @@ elif selected_option == "📁 منصة الوزارة CPD":
             <div class="cpd-total-box">
                 <div class="cpd-total-title">🌟 الإجمالي العام لجميع برامج منصة الوزارة CPD</div>
                 <div class="cpd-stats">
-                    <div class="stat-item" style="color: #38bdf8;">إجمالي المتدربين<span>{cpd_grand_total}</span></div>
-                    <div class="stat-item" style="color: #4ade80;">إجمالي الاجتياز<span>{cpd_grand_pass}</span></div>
-                    <div class="stat-item" style="color: #f87171;">إجمالي عدم الاجتياز<span>{cpd_grand_fail}</span></div>
-                    <div class="stat-item" style="color: #fbbf24;">إجمالي عدم الحضور<span>{cpd_grand_abs}</span></div>
+                    <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{cpd_grand_total}</span></div>
+                    <div class="stat-item" style="color: #4ade80;">اجتياز<span>{cpd_grand_pass}</span></div>
+                    <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_grand_fail}</span></div>
+                    <div class="stat-item" style="color: #fbbf24;">غياب<span>{cpd_grand_abs}</span></div>
                 </div>
             </div>
         """, unsafe_allow_html=True)
@@ -572,24 +577,24 @@ elif selected_option == "📁 منصة الوزارة CPD":
         with cpd_col1:
             st.markdown(f"""
                 <div class="cpd-card-box">
-                    <div class="cpd-title">📚 التطبيقات التربوية للمعلم المساعد 2026/2025</div>
+                    <div class="cpd-title">📚 التطبيقات التربوية للمعلم المساعد</div>
                     <div class="cpd-stats">
                         <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{cpd_p1_total}</span></div>
                         <div class="stat-item" style="color: #4ade80;">اجتياز<span>{cpd_p1_pass}</span></div>
                         <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p1_fail}</span></div>
-                        <div class="stat-item" style="color: #fbbf24;">عدم حضور<span>{cpd_p1_abs}</span></div>
+                        <div class="stat-item" style="color: #fbbf24;">غياب<span>{cpd_p1_abs}</span></div>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
             
             st.markdown(f"""
                 <div class="cpd-card-box">
-                    <div class="cpd-title">👔 تدريب القيادات / التوجيه الفنى 2026/2025</div>
+                    <div class="cpd-title">👔 القيادات / التوجيه الفنى</div>
                     <div class="cpd-stats">
                         <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{cpd_p3_total}</span></div>
                         <div class="stat-item" style="color: #4ade80;">اجتياز<span>{cpd_p3_pass}</span></div>
                         <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p3_fail}</span></div>
-                        <div class="stat-item" style="color: #fbbf24;">عدم حضور<span>{cpd_p3_abs}</span></div>
+                        <div class="stat-item" style="color: #fbbf24;">غياب<span>{cpd_p3_abs}</span></div>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
@@ -597,24 +602,24 @@ elif selected_option == "📁 منصة الوزارة CPD":
         with cpd_col2:
             st.markdown(f"""
                 <div class="cpd-card-box">
-                    <div class="cpd-title">🏫 تدريب القيادات مدير/ وكيل إدارة مدرسية 2026/2025</div>
+                    <div class="cpd-title">🏫 مدير/ وكيل إدارة مدرسية</div>
                     <div class="cpd-stats">
                         <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{cpd_p2_total}</span></div>
                         <div class="stat-item" style="color: #4ade80;">اجتياز<span>{cpd_p2_pass}</span></div>
                         <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p2_fail}</span></div>
-                        <div class="stat-item" style="color: #fbbf24;">عدم حضور<span>{cpd_p2_abs}</span></div>
+                        <div class="stat-item" style="color: #fbbf24;">غياب<span>{cpd_p2_abs}</span></div>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
             
             st.markdown(f"""
                 <div class="cpd-card-box">
-                    <div class="cpd-title">🏢 تدريب القيادات مدير/ وكيل إدارة تعليمية 2026/2025</div>
+                    <div class="cpd-title">🏢 مدير/ وكيل إدارة تعليمية</div>
                     <div class="cpd-stats">
                         <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{cpd_p4_total}</span></div>
                         <div class="stat-item" style="color: #4ade80;">اجتياز<span>{cpd_p4_pass}</span></div>
-                        <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p4_fail}</span></div>
-                        <div class="stat-item" style="color: #fbbf24;">عدم حضور<span>{cpd_p4_abs}</span></div>
+                        <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p4_fail}</span>C</div>
+                        <div class="stat-item" style="color: #fbbf24;">غياب<span>{cpd_p4_abs}</span></div>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
@@ -638,14 +643,14 @@ st.markdown("""
     <style>
     .footer {
         text-align: center;
-        padding: 15px;
-        margin-top: 30px;
+        padding: 10px;
+        margin-top: 20px;
         border-top: 1px solid #e2e8f0;
         color: #475569;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: bold;
         background-color: #f8fafc;
-        border-radius: 8px;
+        border-radius: 6px;
     }
     </style>
     <div class="footer">
