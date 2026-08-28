@@ -165,8 +165,8 @@ c_batch1 = len(df_batch1) if df_batch1 is not None else 0
 c_batch2 = len(df_batch2) if df_batch2 is not None else 0
 c_cpd = len(df_cpd) if df_cpd is not None else 0
 
-# دالة لاستخراج وحساب إحصائيات التخصصات والإدارات التعليمية لمعلمي المساعد
-def display_batch_stats_and_table(df, batch_title):
+# دالة عامة لإحصائيات التخصصات والإدارات معاً
+def display_batch_stats_and_table(df, batch_title, has_specs=True):
     if df is not None:
         total_records = len(df)
         spec_col = None
@@ -174,36 +174,35 @@ def display_batch_stats_and_table(df, batch_title):
         
         for col in df.columns:
             col_s = str(col).strip()
-            if "التخصص" in col_s or "المادة" in col_s or "مادة" in col_s:
+            if has_specs and ("التخصص" in col_s or "المادة" in col_s or "مادة" in col_s):
                 spec_col = col
             elif "الادارة" in col_s or "الإدارة" in col_s:
                 admin_col = col
 
-        # قيم افتراضية للأعمدة إذا لم يتم مطابقتها بالنص بدقة
-        if spec_col is None and len(df.columns) > 3:
+        if has_specs and spec_col is None and len(df.columns) > 3:
             spec_col = df.columns[3]
         if admin_col is None and len(df.columns) > 2:
             admin_col = df.columns[2]
 
-        # حساب إحصائيات التخصصات
-        spec_counts = df[spec_col].astype(str).str.strip().value_counts() if spec_col is not None else pd.Series(dtype=int)
-        # حساب إحصائيات الإدارات التعليمية
+        spec_counts = df[spec_col].astype(str).str.strip().value_counts() if (has_specs and spec_col is not None) else pd.Series(dtype=int)
         admin_counts = df[admin_col].astype(str).str.strip().value_counts() if admin_col is not None else pd.Series(dtype=int)
+
+        stats_html = f'<div class="stat-item" style="color: #38bdf8; font-size: 18px;">الإجمالي العام<span>{total_records}</span></div>'
+        if has_specs:
+            stats_html += f'<div class="stat-item" style="color: #4ade80; font-size: 18px;">عدد التخصصات<span>{len(spec_counts)}</span></div>'
+        stats_html += f'<div class="stat-item" style="color: #facc15; font-size: 18px;">عدد الإدارات<span>{len(admin_counts)}</span></div>'
 
         st.markdown(f"""
             <div class="cpd-total-box">
                 <div class="cpd-total-title">📊 إحصائيات {batch_title}</div>
                 <div class="cpd-stats">
-                    <div class="stat-item" style="color: #38bdf8; font-size: 18px;">الإجمالي العام<span>{total_records}</span></div>
-                    <div class="stat-item" style="color: #4ade80; font-size: 18px;">عدد التخصصات<span>{len(spec_counts)}</span></div>
-                    <div class="stat-item" style="color: #facc15; font-size: 18px;">عدد الإدارات<span>{len(admin_counts)}</span></div>
+                    {stats_html}
                 </div>
             </div>
         """, unsafe_allow_html=True)
         
-        # عرض تخصصات المعلمين
-        if not spec_counts.empty:
-            st.markdown("### 📋 تفصيل أعداد ملفات المعلمين بكل تخصص:")
+        if has_specs and not spec_counts.empty:
+            st.markdown("### 📋 تفصيل أعداد المعلمين بكل تخصص:")
             spec_cols = st.columns(3)
             idx = 0
             for spec_name, spec_count in spec_counts.items():
@@ -217,9 +216,8 @@ def display_batch_stats_and_table(df, batch_title):
                 idx += 1
             st.markdown("<br>", unsafe_allow_html=True)
 
-        # عرض إدارات المعلمين
         if not admin_counts.empty:
-            st.markdown("### 🏫 تفصيل أعداد ملفات المعلمين بكل إدارة تعليمية:")
+            st.markdown("### 🏫 تفصيل أعداد المعلمين بكل إدارة تعليمية:")
             admin_cols = st.columns(3)
             idx = 0
             for admin_name, admin_count in admin_counts.items():
@@ -501,21 +499,15 @@ elif selected_option == "📁 التسكين علي الكادر":
 
 elif selected_option == "📁 قرار 160":
     st.markdown('<p class="program-header">📁 إعادة التعيين (قرار 160)</p>', unsafe_allow_html=True)
-    if df_reassign is not None:
-        st.metric(label="إجمالي السجلات", value=len(df_reassign))
-        sq = st.text_input("بحث مخصص:")
-        ddf = df_reassign[df_reassign.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)] if sq else df_reassign
-        st.dataframe(ddf, use_container_width=True)
-    else:
-        st.error("الملف غير متوفر.")
+    display_batch_stats_and_table(df_reassign, "إعادة التعيين (قرار 160)", has_specs=False)
 
 elif selected_option == "📁 ملفات معلم مساعد الدفعة 1":
     st.markdown('<p class="program-header">📁 ملفات معلم مساعد الدفعة الأولى</p>', unsafe_allow_html=True)
-    display_batch_stats_and_table(df_batch1, "ملفات معلم مساعد الدفعة الأولى")
+    display_batch_stats_and_table(df_batch1, "معلم مساعد الدفعة الأولى", has_specs=True)
 
 elif selected_option == "📁 ملفات معلم مساعد الدفعة 2":
     st.markdown('<p class="program-header">📁 ملفات معلم مساعد الدفعة الثانية</p>', unsafe_allow_html=True)
-    display_batch_stats_and_table(df_batch2, "ملفات معلم مساعد الدفعة الثانية")
+    display_batch_stats_and_table(df_batch2, "معلم مساعد الدفعة الثانية", has_specs=True)
 
 elif selected_option == "📁 منصة الوزارة CPD":
     st.markdown('<p class="program-header">📊 إحصائيات نتيجة منصة CPD حتي 12-5-2026</p>', unsafe_allow_html=True)
