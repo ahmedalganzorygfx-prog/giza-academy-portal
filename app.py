@@ -511,11 +511,11 @@ elif selected_option == "📁 قرار 160":
 
 elif selected_option == "📁 ملفات معلم مساعد الدفعة 1":
     st.markdown('<p class="program-header">📁 ملفات معلم مساعد الدفعة الأولى</p>', unsafe_allow_html=True)
-    display_batch_stats_and_table(df_batch1, "معلم مساعد الدفعة الأولى")
+    display_batch_stats_and_table(df_batch1, "ملفات معلم مساعد الدفعة الأولى")
 
 elif selected_option == "📁 ملفات معلم مساعد الدفعة 2":
     st.markdown('<p class="program-header">📁 ملفات معلم مساعد الدفعة الثانية</p>', unsafe_allow_html=True)
-    display_batch_stats_and_table(df_batch2, "معلم مساعد الدفعة الثانية")
+    display_batch_stats_and_table(df_batch2, "ملفات معلم مساعد الدفعة الثانية")
 
 elif selected_option == "📁 منصة الوزارة CPD":
     st.markdown('<p class="program-header">📊 إحصائيات نتيجة منصة CPD حتي 12-5-2026</p>', unsafe_allow_html=True)
