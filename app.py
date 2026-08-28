@@ -126,7 +126,6 @@ menu_options = [
     "📁 منصة الوزارة CPD"
 ]
 
-# استخدام st.pills لعرض القائمة بشكل أفقّي أنيق تفاعلي تحت الهيدر
 selected_option = st.pills("🗂️ الانتقال السريع بين الأقسام:", menu_options, default=menu_options[0])
 st.markdown("---")
 
@@ -159,19 +158,17 @@ c_reassign = len(df_reassign) if df_reassign is not None else 0
 c_batch1 = len(df_batch1) if df_batch1 is not None else 0
 c_batch2 = len(df_batch2) if df_batch2 is not None else 0
 
-# دالة مطابقة واستخراج الإحصائيات بدقة تامة من عمود البرنامج وعمود النتيجة
+# دالة استخراج إحصائيات منصة الوزارة CPD
 def get_cpd_exact_stats(df, program_keyword):
     if df is not None:
         prog_col = None
         result_col = None
-        
         for col in df.columns:
             col_str = str(col).strip()
             if "البرنامج" in col_str:
                 prog_col = col
             elif "النتيجة" in col_str or "الحالة" in col_str:
                 result_col = col
-                
         if prog_col is None:
             prog_col = df.columns[4] if len(df.columns) > 4 else df.columns[-2]
         if result_col is None:
@@ -179,32 +176,26 @@ def get_cpd_exact_stats(df, program_keyword):
             
         sub_df = df[df[prog_col].astype(str).str.contains(program_keyword, case=False, na=False)]
         total = len(sub_df)
-        
         if total == 0:
             return 0, 0, 0, 0
-            
         res_series = sub_df[result_col].astype(str).str.strip()
-        
         passed = len(sub_df[res_series.str.fullmatch("اجتياز", case=False, na=False) | res_series.str.contains("^اجتياز$", regex=True, na=False)])
         failed = len(sub_df[res_series.str.contains("عدم الاجتياز|عدم اجتياز", case=False, na=False)])
         absent = len(sub_df[res_series.str.contains("عدم الحضور|عدم حضور", case=False, na=False)])
-        
         return total, passed, failed, absent
     return 0, 0, 0, 0
 
-# حساب الإحصائيات الأربع الدقيقة لكل برنامج من منصة الوزارة
 cpd_p1_total, cpd_p1_pass, cpd_p1_fail, cpd_p1_abs = get_cpd_exact_stats(df_cpd, "التطبيقات التربوية")
 cpd_p2_total, cpd_p2_pass, cpd_p2_fail, cpd_p2_abs = get_cpd_exact_stats(df_cpd, "مدير/ وكيل إدارة مدرسية")
 cpd_p3_total, cpd_p3_pass, cpd_p3_fail, cpd_p3_abs = get_cpd_exact_stats(df_cpd, "التوجيه الفنى")
 cpd_p4_total, cpd_p4_pass, cpd_p4_fail, cpd_p4_abs = get_cpd_exact_stats(df_cpd, "إدارة تعليمية")
 
-# حساب الإجمالي العام لجميع برامج منصة الوزارة
 cpd_grand_total = cpd_p1_total + cpd_p2_total + cpd_p3_total + cpd_p4_total
 cpd_grand_pass = cpd_p1_pass + cpd_p2_pass + cpd_p3_pass + cpd_p4_pass
 cpd_grand_fail = cpd_p1_fail + cpd_p2_fail + cpd_p3_fail + cpd_p4_fail
 cpd_grand_abs = cpd_p1_abs + cpd_p2_abs + cpd_p3_abs + cpd_p4_abs
 
-# 1. شاشة الرئيسية والمؤشرات العامة والبحث الشامل
+# 1. شاشة الرئيسية والبحث الشامل
 if selected_option == "🏠 الرئيسية والبحث الشامل":
     st.markdown("### 🔎 البحث الشامل بالكود في كافة الملفات والبرامج")
     global_search_code = st.text_input("أدخل كود المعلم للبحث الفوري عنه في جميع الكشوفات:", placeholder="مثال: 3089097")
@@ -249,10 +240,8 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # تقسيم وتحليل بطاقات منصة الوزارة CPD بالتفصيل مع إضافة بطاقة الإجمالي العام في الأعلى
+    # تقسيم وتحليل بطاقات منصة الوزارة CPD بالتفصيل
     st.markdown("### 📊 نتيجة منصة CPD حتي 12-5-2026 ")
-    
-    # بطاقة الإجمالي العام المجمعة
     st.markdown(f"""
         <div class="cpd-total-box">
             <div class="cpd-total-title">🌟 الإجمالي العام لجميع برامج منصة الوزارة CPD</div>
@@ -333,37 +322,110 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
 
     st.altair_chart(chart, use_container_width=True)
 
-# دالة عرض الأقسام التفصيلية بناءً على اختيار القائمة الأفقية
-def render_section_by_dropdown(title, df):
-    st.markdown(f'<p class="program-header">📁 {title}</p>', unsafe_allow_html=True)
-    if df is not None:
-        st.metric(label=f"إجمالي السجلات في هذا الكشف", value=len(df))
-        search_query = st.text_input(f"🔍 بحث مخصص داخل كشف {title}:", key=f"search_{title}")
-        display_df = df
+# 2. عرض قسم "معد البرامج التدريبية" مع الإحصائية المطلوبة
+elif selected_option == "📁 معد البرامج":
+    st.markdown('<p class="program-header">📁 معد البرامج التدريبية</p>', unsafe_allow_html=True)
+    if df_training is not None:
+        # حساب الإحصائيات الخاصة بعمود "حالة الاعتماد"
+        tr_total = len(df_training)
+        tr_passed = 0
+        tr_failed = 0
+        
+        # البحث عن عمود حالة الاعتماد بدقة
+        accre_col = None
+        for col in df_training.columns:
+            if "حالة الاعتماد" in str(col).strip():
+                accre_col = col
+                break
+        
+        if accre_col is not None:
+            accre_series = df_training[accre_col].astype(str).str.strip()
+            tr_passed = len(df_training[accre_series.str.contains("اجتياز الاعتماد بنجاح", case=False, na=False)])
+            tr_failed = len(df_training[accre_series.str.contains("لم يجتاز", case=False, na=False)])
+        
+        # عرض بطاقة الإحصائيات الخاصة ببرنامج معد البرامج
+        st.markdown(f"""
+            <div class="cpd-total-box">
+                <div class="cpd-total-title">📊 إحصائيات اعتماد معد البرامج التدريبية</div>
+                <div class="cpd-stats">
+                    <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{tr_total}</span></div>
+                    <div class="stat-item" style="color: #4ade80;">اجتاز الاعتماد بنجاح<span>{tr_passed}</span></div>
+                    <div class="stat-item" style="color: #f87171;">لم يجتاز<span>{tr_failed}</span></div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        search_query = st.text_input("🔍 بحث مخصص داخل كشف معد البرامج التدريبية:")
+        display_df = df_training
         if search_query:
-            mask = df.astype(str).apply(lambda x: x.str.contains(search_query, case=False, na=False)).any(axis=1)
-            display_df = df[mask]
+            mask = df_training.astype(str).apply(lambda x: x.str.contains(search_query, case=False, na=False)).any(axis=1)
+            display_df = df_training[mask]
             st.info(f"عدد النتائج المطابقة للبحث: {len(display_df)}")
         
         st.dataframe(display_df, use_container_width=True)
     else:
-        st.error(f"تعذر العثور على ملف الإكسل الخاص بـ '{title}'. تأكد من رفع الملف في المستودع.")
+        st.error("تعذر العثور على ملف الإكسل الخاص بـ 'معد البرامج التدريبية' (training.xlsx).")
 
-# عرض القسم المختيار من القائمة الأفقية
-if selected_option == "📁 معد البرامج":
-    render_section_by_dropdown("معد البرامج التدريبية", df_training)
+# بقية الأقسام الأخرى
 elif selected_option == "📁 المسمى الوظيفي":
-    render_section_by_dropdown("المسمى الوظيفي", df_job)
+    st.markdown('<p class="program-header">📁 المسمى الوظيفي</p>', unsafe_allow_html=True)
+    if df_job is not None:
+        st.metric(label="إجمالي السجلات", value=len(df_job))
+        sq = st.text_input("بحث مخصص:")
+        ddf = df_job[df_job.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)] if sq else df_job
+        st.dataframe(ddf, use_container_width=True)
+    else:
+        st.error("الملف غير متوفر.")
+
 elif selected_option == "📁 التسكين علي الكادر":
-    render_section_by_dropdown("التسكين علي الكادر", df_cader)
+    st.markdown('<p class="program-header">📁 التسكين علي الكادر</p>', unsafe_allow_html=True)
+    if df_cader is not None:
+        st.metric(label="إجمالي السجلات", value=len(df_cader))
+        sq = st.text_input("بحث مخصص:")
+        ddf = df_cader[df_cader.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)] if sq else df_cader
+        st.dataframe(ddf, use_container_width=True)
+    else:
+        st.error("الملف غير متوفر.")
+
 elif selected_option == "📁 قرار 160":
-    render_section_by_dropdown("إعادة التعيين (قرار 160)", df_reassign)
+    st.markdown('<p class="program-header">📁 إعادة التعيين (قرار 160)</p>', unsafe_allow_html=True)
+    if df_reassign is not None:
+        st.metric(label="إجمالي السجلات", value=len(df_reassign))
+        sq = st.text_input("بحث مخصص:")
+        ddf = df_reassign[df_reassign.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)] if sq else df_reassign
+        st.dataframe(ddf, use_container_width=True)
+    else:
+        st.error("الملف غير متوفر.")
+
 elif selected_option == "📁 ملفات معلم مساعد الدفعة 1":
-    render_section_by_dropdown("معلم مساعد الدفعة الأولى", df_batch1)
+    st.markdown('<p class="program-header">📁 معلم مساعد الدفعة الأولى</p>', unsafe_allow_html=True)
+    if df_batch1 is not None:
+        st.metric(label="إجمالي السجلات", value=len(df_batch1))
+        sq = st.text_input("بحث مخصص:")
+        ddf = df_batch1[df_batch1.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)] if sq else df_batch1
+        st.dataframe(ddf, use_container_width=True)
+    else:
+        st.error("الملف غير متوفر.")
+
 elif selected_option == "📁 ملفات معلم مساعد الدفعة 2":
-    render_section_by_dropdown("معلم مساعد الدفعة الثانية", df_batch2)
+    st.markdown('<p class="program-header">📁 معلم مساعد الدفعة الثانية</p>', unsafe_allow_html=True)
+    if df_batch2 is not None:
+        st.metric(label="إجمالي السجلات", value=len(df_batch2))
+        sq = st.text_input("بحث مخصص:")
+        ddf = df_batch2[df_batch2.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)] if sq else df_batch2
+        st.dataframe(ddf, use_container_width=True)
+    else:
+        st.error("الملف غير متوفر.")
+
 elif selected_option == "📁 منصة الوزارة CPD":
-    render_section_by_dropdown("نتيجة برامج منصة الوزارة CPD", df_cpd)
+    st.markdown('<p class="program-header">📁 نتيجة برامج منصة الوزارة CPD</p>', unsafe_allow_html=True)
+    if df_cpd is not None:
+        st.metric(label="إجمالي السجلات", value=len(df_cpd))
+        sq = st.text_input("بحث مخصص:")
+        ddf = df_cpd[df_cpd.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)] if sq else df_cpd
+        st.dataframe(ddf, use_container_width=True)
+    else:
+        st.error("الملف غير متوفر.")
 
 # --- تذييل الصفحة (Footer) ---
 st.markdown("""
@@ -381,6 +443,6 @@ st.markdown("""
     }
     </style>
     <div class="footer">
-        تصميم وتنفيذ: <span style="color: #2563eb;">أحمد الجنزوري - مدير فرع الجيزة</span> 🌟
+        تصميم وتنفيذ: <span style="color: #2563eb;">أحمد الجنزوري مدير الفرع</span> 🌟
     </div>
 """, unsafe_allow_html=True)
