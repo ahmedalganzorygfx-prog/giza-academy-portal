@@ -174,10 +174,12 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword=
         
         for col in df.columns:
             col_s = str(col).strip()
+            # البحث الدقيق عن عمود التخصص على الكادر مع استبعاد كلمة مؤهل تماماً
             if has_specs and ("التخصص علي الكادر" in col_s or "التخصص على الكادر" in col_s or (col_s == spec_keyword)):
                 spec_col = col
                 break
         
+        # إذا لم يُعثر عليه بالاسم الدقيق، نبحث عن كلمة تخصص بشرط ألا تحتوي على كلمة مؤهل
         if has_specs and spec_col is None:
             for col in df.columns:
                 col_s = str(col).strip()
@@ -185,6 +187,7 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword=
                     spec_col = col
                     break
 
+        # البحث عن عمود الإدارة
         for col in df.columns:
             col_s = str(col).strip()
             if "الادارة" in col_s or "الإدارة" in col_s:
@@ -333,38 +336,20 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # تحضير بيانات الرسوم البيانية
+    # الرسوم البيانية الشاملة
+    st.markdown("### 📈 التحليل البصري ومقارنة أعداد السجلات للبرامج")
     chart_data = pd.DataFrame({
         "البرنامج": ["معد البرامج", "اعتماد TOT", "المسمى الوظيفي", "التسكين", "قرار 160", "معلم مساعد 1", "معلم مساعد 2", "منصة الوزارة CPD"],
         "عدد السجلات": [c_training, c_tot, c_job, c_cader, c_reassign, c_batch1, c_batch2, c_cpd]
     })
 
-    # تقسيم العرض إلى عمودين للرسم البياني العمودي والدائري (Pie Chart)
-    chart_col1, chart_col2 = st.columns(2)
+    chart = alt.Chart(chart_data).mark_bar(color="#3b82f6", cornerRadiusTopLeft=4, cornerRadiusTopRight=4).encode(
+        x=alt.X("البرنامج:N", sort=None, title="", axis=alt.Axis(labelAngle=0, labelFontSize=11)),
+        y=alt.Y("عدد السجلات:Q", title="إجمالي السجلات"),
+        tooltip=["البرنامج", "عدد السجلات"]
+    ).properties(height=320)
 
-    with chart_col1:
-        st.markdown("### 📊 مقارنة أعداد السجلات (أعمدة بيانية)")
-        bar_chart = alt.Chart(chart_data).mark_bar(color="#3b82f6", cornerRadiusTopLeft=4, cornerRadiusTopRight=4).encode(
-            x=alt.X("البرنامج:N", sort=None, title="", axis=alt.Axis(labelAngle=-30, labelFontSize=11)),
-            y=alt.Y("عدد السجلات:Q", title="إجمالي السجلات"),
-            tooltip=["البرنامج", "عدد السجلات"]
-        ).properties(height=350)
-        st.altair_chart(bar_chart, use_container_width=True)
-
-    with chart_col2:
-        st.markdown("### 🥧 نسب وتوزيع السجلات (مخطط دائري Pie)")
-        pie_base = alt.Chart(chart_data).mark_arc(outerRadius=120, innerRadius=50).encode(
-            theta=alt.Theta("عدد السجلات:Q"),
-            color=alt.Color("البرنامج:N", legend=alt.Legend(title="البرامج", orient="right")),
-            tooltip=["البرنامج", "عدد السجلات"]
-        ).properties(height=350)
-        
-        # إضافة نص النسب على المخطط الدائري
-        pie_text = pie_base.mark_text(radius=140, size=11).encode(
-            text=alt.Text("عدد السجلات:Q")
-        )
-        
-        st.altair_chart(pie_base + pie_text, use_container_width=True)
+    st.altair_chart(chart, use_container_width=True)
 
 # 2. عرض قسم "معد البرامج التدريبية"
 elif selected_option == "📁 معد البرامج":
