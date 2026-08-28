@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تخصيص واجهة المستخدم والتنسیقات المتناسقة
+# تخصيص واجهة المستخدم والتنسيقات المتناسقة
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -361,36 +361,20 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # تحضير بيانات الرسوم البيانية
+    # تحضير بيانات الرسوم البيانية للأعمدة فقط
     chart_data = pd.DataFrame({
         "البرنامج": ["معد البرامج", "اعتماد TOT", "المسمى الوظيفي", "التسكين", "قرار 160", "معلم مساعد 1", "معلم مساعد 2", "منصة الوزارة CPD"],
         "عدد السجلات": [c_training, c_tot, c_job, c_cader, c_reassign, c_batch1, c_batch2, c_cpd]
     })
 
-    # تقسيم العرض إلى عمودين للرسم البياني العمودي والدائري (Pie Chart)
-    chart_col1, chart_col2 = st.columns(2)
-
-    with chart_col1:
-        st.markdown("### 📊 مقارنة أعداد السجلات (أعمدة بيانية)")
-        bar_chart = alt.Chart(chart_data).mark_bar(color="#3b82f6", cornerRadiusTopLeft=4, cornerRadiusTopRight=4).encode(
-            x=alt.X("البرنامج:N", sort=None, title="", axis=alt.Axis(labelAngle=-30, labelFontSize=11)),
-            y=alt.Y("عدد السجلات:Q", title="إجمالي السجلات"),
-            tooltip=["البرنامج", "عدد السجلات"]
-        ).properties(height=350)
-        st.altair_chart(bar_chart, use_container_width=True)
-
-    with chart_col2:
-        st.markdown("### 🥧 نسب وتوزيع السجلات (مخطط دائري Pie)")
-        pie_base = alt.Chart(chart_data).mark_arc(outerRadius=120, innerRadius=50).encode(
-            theta=alt.Theta("عدد السجلات:Q"),
-            color=alt.Color("البرنامج:N", legend=alt.Legend(title="البرامج", orient="right")),
-            tooltip=["البرنامج", "عدد السجلات"]
-        ).properties(height=350)
-        
-        pie_text = pie_base.mark_text(radius=140, size=11).encode(
-            text=alt.Text("عدد السجلات:Q")
-        )
-        st.altair_chart(pie_base + pie_text, use_container_width=True)
+    st.markdown("### 📊 مقارنة أعداد السجلات (الأعمدة البيانية)")
+    bar_chart = alt.Chart(chart_data).mark_bar(color="#3b82f6", cornerRadiusTopLeft=6, cornerRadiusTopRight=6).encode(
+        x=alt.X("البرنامج:N", sort=None, title="", axis=alt.Axis(labelAngle=0, labelFontSize=12)),
+        y=alt.Y("عدد السجلات:Q", title="إجمالي السجلات"),
+        tooltip=["البرنامج", "عدد السجلات"]
+    ).properties(height=380)
+    
+    st.altair_chart(bar_chart, use_container_width=True)
 
 # 2. عرض قسم "معد البرامج التدريبية"
 elif selected_option == "📁 معد البرامج":
