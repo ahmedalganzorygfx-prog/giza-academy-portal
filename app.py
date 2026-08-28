@@ -165,7 +165,7 @@ c_batch1 = len(df_batch1) if df_batch1 is not None else 0
 c_batch2 = len(df_batch2) if df_batch2 is not None else 0
 c_cpd = len(df_cpd) if df_cpd is not None else 0
 
-# دالة عامة لإحصائيات التخصصات والإدارات معاً
+# دالة محسّنة بدقة للبحث عن عمود "التخصص على الكادر" وتجنب أعمدة المؤهلات
 def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword="التخصص علي الكادر"):
     if df is not None:
         total_records = len(df)
@@ -174,15 +174,25 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword=
         
         for col in df.columns:
             col_s = str(col).strip()
-            if has_specs and (spec_keyword in col_s or "التخصص علي الكادر" in col_s or "التخصص" in col_s or "المادة" in col_s):
+            # البحث الدقيق عن عمود التخصص على الكادر مع استبعاد كلمة مؤهل تماماً
+            if has_specs and ("التخصص علي الكادر" in col_s or "التخصص على الكادر" in col_s or (col_s == spec_keyword)):
                 spec_col = col
-            elif "الادارة" in col_s or "الإدارة" in col_s:
-                admin_col = col
+                break
+        
+        # إذا لم يُعثر عليه بالاسم الدقيق، نبحث عن كلمة تخصص بشرط ألا تحتوي على كلمة مؤهل
+        if has_specs and spec_col is None:
+            for col in df.columns:
+                col_s = str(col).strip()
+                if "تخصص" in col_s and "مؤهل" not in col_s and "المؤهل" not in col_s:
+                    spec_col = col
+                    break
 
-        if has_specs and spec_col is None and len(df.columns) > 3:
-            spec_col = df.columns[3]
-        if admin_col is None and len(df.columns) > 2:
-            admin_col = df.columns[2]
+        # البحث عن عمود الإدارة
+        for col in df.columns:
+            col_s = str(col).strip()
+            if "الادارة" in col_s or "الإدارة" in col_s:
+                admin_col = col
+                break
 
         spec_counts = df[spec_col].astype(str).str.strip().value_counts() if (has_specs and spec_col is not None) else pd.Series(dtype=int)
         admin_counts = df[admin_col].astype(str).str.strip().value_counts() if admin_col is not None else pd.Series(dtype=int)
