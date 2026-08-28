@@ -73,6 +73,7 @@ st.markdown("""
     .metric-card-4 { background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
     .metric-card-5 { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
     .metric-card-6 { background: linear-gradient(135deg, #cb356b 0%, #bd3f32 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
+    .metric-card-7 { background: linear-gradient(135deg, #3a7bd5 0%, #3a6073 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
     
     .cpd-card-box { background: #1e293b; border: 1px solid #334155; padding: 15px; border-radius: 12px; color: white; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
     .cpd-total-box { background: linear-gradient(135deg, #0f172a 100%, #1e3a8a 0%); border: 2px solid #3b82f6; padding: 18px; border-radius: 14px; color: white; margin-bottom: 25px; box-shadow: 0 8px 16px rgba(0,0,0,0.3); }
@@ -118,6 +119,7 @@ st.markdown(f"""
 menu_options = [
     "🏠 الرئيسية والبحث الشامل",
     "📁 معد البرامج",
+    "📁 اعتماد TOT",
     "📁 المسمى الوظيفي",
     "📁 التسكين علي الكادر",
     "📁 قرار 160",
@@ -143,6 +145,7 @@ def load_excel_file(filename):
 
 # تحميل الملفات
 df_training = load_excel_file("training.xlsx")
+df_tot = load_excel_file("Accrediation.xlsx")
 df_job = load_excel_file("job.xlsx")
 df_cader = load_excel_file("cader.xlsx")
 df_reassign = load_excel_file("160.xlsx")
@@ -152,6 +155,7 @@ df_cpd = load_excel_file("CPD To 12-5-2026.xlsx")
 
 # حساب أعداد السجلات الأساسية
 c_training = len(df_training) if df_training is not None else 0
+c_tot = len(df_tot) if df_tot is not None else 0
 c_job = len(df_job) if df_job is not None else 0
 c_cader = len(df_cader) if df_cader is not None else 0
 c_reassign = len(df_reassign) if df_reassign is not None else 0
@@ -216,6 +220,7 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
             return found
 
         check_and_display(df_training, "معد البرامج التدريبية")
+        check_and_display(df_tot, "اعتماد TOT")
         check_and_display(df_job, "المسمى الوظيفي")
         check_and_display(df_cader, "التسكين علي الكادر")
         check_and_display(df_reassign, "إعادة التعيين (قرار 160)")
@@ -224,13 +229,13 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
         check_and_display(df_cpd, "برامج منصة الوزارة CPD")
         st.markdown("---")
 
-    # البطاقات الإحصائية الملونة للبرامج الأساسية
+    # البطاقات الإحصائية الملونة للبرامج الأساسية (تمت إضافة اعتماد TOT)
     st.markdown("### 📌 مؤشرات الإحصاء العامة لبرامج الفرع")
     col1, col2, col3 = st.columns(3)
 
     with col1:
         st.markdown(f'<div class="metric-card-1"><div class="card-title">معد البرامج التدريبية</div><div class="card-number">{c_training}</div></div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="metric-card-4"><div class="card-title">إعادة التعيين (قرار 160)</div><div class="card-number">{c_reassign}</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="metric-card-7"><div class="card-title">اعتماد TOT</div><div class="card-number">{c_tot}</div></div>', unsafe_allow_html=True)
     with col2:
         st.markdown(f'<div class="metric-card-2"><div class="card-title">المسمى الوظيفي</div><div class="card-number">{c_job}</div></div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-card-5"><div class="card-title">معلم مساعد (الدفعة الأولى)</div><div class="card-number">{c_batch1}</div></div>', unsafe_allow_html=True)
@@ -310,8 +315,8 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
     # الرسوم البيانية الشاملة
     st.markdown("### 📈 التحليل البصري ومقارنة أعداد السجلات للبرامج")
     chart_data = pd.DataFrame({
-        "البرنامج": ["معد البرامج", "المسمى الوظيفي", "التسكين", "قرار 160", "معلم مساعد 1", "معلم مساعد 2", "منصة الوزارة CPD"],
-        "عدد السجلات": [c_training, c_job, c_cader, c_reassign, c_batch1, c_batch2, (len(df_cpd) if df_cpd is not None else 0)]
+        "البرنامج": ["معد البرامج", "اعتماد TOT", "المسمى الوظيفي", "التسكين", "قرار 160", "معلم مساعد 1", "معلم مساعد 2", "منصة الوزارة CPD"],
+        "عدد السجلات": [c_training, c_tot, c_job, c_cader, c_reassign, c_batch1, c_batch2, (len(df_cpd) if df_cpd is not None else 0)]
     })
 
     chart = alt.Chart(chart_data).mark_bar(color="#3b82f6", cornerRadiusTopLeft=4, cornerRadiusTopRight=4).encode(
@@ -322,16 +327,14 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
 
     st.altair_chart(chart, use_container_width=True)
 
-# 2. عرض قسم "معد البرامج التدريبية" مع الإحصائية المطلوبة
+# 2. عرض قسم "معد البرامج التدريبية"
 elif selected_option == "📁 معد البرامج":
     st.markdown('<p class="program-header">📁 معد البرامج التدريبية</p>', unsafe_allow_html=True)
     if df_training is not None:
-        # حساب الإحصائيات الخاصة بعمود "حالة الاعتماد"
         tr_total = len(df_training)
         tr_passed = 0
         tr_failed = 0
         
-        # البحث عن عمود حالة الاعتماد بدقة
         accre_col = None
         for col in df_training.columns:
             if "حالة الاعتماد" in str(col).strip():
@@ -343,7 +346,6 @@ elif selected_option == "📁 معد البرامج":
             tr_passed = len(df_training[accre_series.str.contains("اجتياز الاعتماد بنجاح", case=False, na=False)])
             tr_failed = len(df_training[accre_series.str.contains("لم يجتاز", case=False, na=False)])
         
-        # عرض بطاقة الإحصائيات الخاصة ببرنامج معد البرامج
         st.markdown(f"""
             <div class="cpd-total-box">
                 <div class="cpd-total-title">📊 إحصائيات اعتماد معد البرامج التدريبية</div>
@@ -365,6 +367,62 @@ elif selected_option == "📁 معد البرامج":
         st.dataframe(display_df, use_container_width=True)
     else:
         st.error("تعذر العثور على ملف الإكسل الخاص بـ 'معد البرامج التدريبية' (training.xlsx).")
+
+# 3. عرض قسم "اعتماد TOT" والإحصائية المطلوبة بالتخصصات
+elif selected_option == "📁 اعتماد TOT":
+    st.markdown('<p class="program-header">📁 اعتماد TOT</p>', unsafe_allow_html=True)
+    if df_tot is not None:
+        tot_total = len(df_tot)
+        
+        # البحث عن عمود تخصص الاعتماد
+        spec_col = None
+        for col in df_tot.columns:
+            if "تخصص الاعتماد" in str(col).strip():
+                spec_col = col
+                break
+        
+        if spec_col is not None:
+            spec_counts = df_tot[spec_col].astype(str).str.strip().value_counts()
+            
+            # بطاقة الإجمالي العام لـ TOT
+            st.markdown(f"""
+                <div class="cpd-total-box">
+                    <div class="cpd-total-title">🌟 إحصائيات برنامج اعتماد TOT</div>
+                    <div class="cpd-stats">
+                        <div class="stat-item" style="color: #38bdf8; font-size: 18px;">إجمالي المتقدمين<span>{tot_total}</span></div>
+                        <div class="stat-item" style="color: #4ade80; font-size: 18px;">عدد التخصصات<span>{len(spec_counts)}</span></div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            # عرض توزيع التخصصات في أعمدة منسقة وأنيقة
+            st.markdown("### 📋 تفصيل أعداد المعلمين بكل تخصص:")
+            spec_cols = st.columns(3)
+            idx = 0
+            for spec_name, spec_count in spec_counts.items():
+                with spec_cols[idx % 3]:
+                    st.markdown(f"""
+                        <div class="cpd-card-box">
+                            <div class="cpd-title">{spec_name}</div>
+                            <div style="text-align: center; font-size: 20px; font-weight: bold; color: #4ade80; margin-top: 5px;">{spec_count}</div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                idx += 1
+        else:
+            st.warning("⚠️ لم يتم العثور على عمود 'تخصص الاعتماد' في ملف Accrediation.xlsx، سيتم عرض الإجمالي فقط.")
+            st.metric(label="إجمالي المتقدمين", value=tot_total)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        search_query = st.text_input("🔍 بحث مخصص داخل كشف اعتماد TOT:")
+        display_df = df_tot
+        if search_query:
+            mask = df_tot.astype(str).apply(lambda x: x.str.contains(search_query, case=False, na=False)).any(axis=1)
+            display_df = df_tot[mask]
+            st.info(f"عدد النتائج المطابقة للبحث: {len(display_df)}")
+        
+        st.dataframe(display_df, use_container_width=True)
+    else:
+        st.error("تعذر العثور على ملف الإكسل الخاص بـ 'اعتماد TOT' (Accrediation.xlsx).")
 
 # بقية الأقسام الأخرى
 elif selected_option == "📁 المسمى الوظيفي":
