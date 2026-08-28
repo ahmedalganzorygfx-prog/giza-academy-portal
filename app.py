@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تخصيص واجهة المستخدم والتنسيقات المتناسقة
+# تخصيص واجهة المستخدم والتنسیقات المتناسقة
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -232,7 +232,7 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
         check_and_display(df_cpd, "برامج منصة الوزارة CPD")
         st.markdown("---")
 
-    # البطاقات الإحصائية الملونة للبرامج الأساسية (تتضمن الآن منصة الوزارة CPD وقرار 160)
+    # البطاقات الإحصائية الملونة للبرامج الأساسية
     st.markdown("### 📌 مؤشرات الإحصاء العامة لبرامج الفرع")
     col1, col2, col3 = st.columns(3)
 
@@ -250,7 +250,7 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # تقسيم وتحليل بطاقات منصة الوزارة CPD بالتفصيل
+    # تقسيم وتحليل بطاقات منصة الوزارة CPD بالتفصيل في الرئيسية
     st.markdown("### 📊 نتيجة منصة CPD حتي 12-5-2026 ")
     st.markdown(f"""
         <div class="cpd-total-box">
@@ -519,14 +519,82 @@ elif selected_option == "📁 ملفات معلم مساعد الدفعة 2":
         st.error("الملف غير متوفر.")
 
 elif selected_option == "📁 منصة الوزارة CPD":
-    st.markdown('<p class="program-header">📁 نتيجة برامج منصة الوزارة CPD</p>', unsafe_allow_html=True)
+    st.markdown('<p class="program-header">📊 إحصائيات نتيجة منصة CPD حتي 12-5-2026</p>', unsafe_allow_html=True)
     if df_cpd is not None:
-        st.metric(label="إجمالي السجلات", value=len(df_cpd))
-        sq = st.text_input("بحث مخصص:")
-        ddf = df_cpd[df_cpd.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)] if sq else df_cpd
+        # عرض البطاقات الإحصائية المطابقة للصورة تماماً عند الضغط على قسم منصة الوزارة CPD
+        st.markdown(f"""
+            <div class="cpd-total-box">
+                <div class="cpd-total-title">🌟 الإجمالي العام لجميع برامج منصة الوزارة CPD</div>
+                <div class="cpd-stats">
+                    <div class="stat-item" style="color: #38bdf8;">إجمالي المتدربين<span>{cpd_grand_total}</span></div>
+                    <div class="stat-item" style="color: #4ade80;">إجمالي الاجتياز<span>{cpd_grand_pass}</span></div>
+                    <div class="stat-item" style="color: #f87171;">إجمالي عدم الاجتياز<span>{cpd_grand_fail}</span></div>
+                    <div class="stat-item" style="color: #fbbf24;">إجمالي عدم الحضور<span>{cpd_grand_abs}</span></div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+        cpd_col1, cpd_col2 = st.columns(2)
+        with cpd_col1:
+            st.markdown(f"""
+                <div class="cpd-card-box">
+                    <div class="cpd-title">📚 التطبيقات التربوية للمعلم المساعد 2026/2025</div>
+                    <div class="cpd-stats">
+                        <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{cpd_p1_total}</span></div>
+                        <div class="stat-item" style="color: #4ade80;">اجتياز<span>{cpd_p1_pass}</span></div>
+                        <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p1_fail}</span></div>
+                        <div class="stat-item" style="color: #fbbf24;">عدم حضور<span>{cpd_p1_abs}</span></div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+                <div class="cpd-card-box">
+                    <div class="cpd-title">👔 تدريب القيادات / التوجيه الفنى 2026/2025</div>
+                    <div class="cpd-stats">
+                        <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{cpd_p3_total}</span></div>
+                        <div class="stat-item" style="color: #4ade80;">اجتياز<span>{cpd_p3_pass}</span></div>
+                        <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p3_fail}</span></div>
+                        <div class="stat-item" style="color: #fbbf24;">عدم حضور<span>{cpd_p3_abs}</span></div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+
+        with cpd_col2:
+            st.markdown(f"""
+                <div class="cpd-card-box">
+                    <div class="cpd-title">🏫 تدريب القيادات مدير/ وكيل إدارة مدرسية 2026/2025</div>
+                    <div class="cpd-stats">
+                        <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{cpd_p2_total}</span></div>
+                        <div class="stat-item" style="color: #4ade80;">اجتياز<span>{cpd_p2_pass}</span></div>
+                        <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p2_fail}</span></div>
+                        <div class="stat-item" style="color: #fbbf24;">عدم حضور<span>{cpd_p2_abs}</span></div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+                <div class="cpd-card-box">
+                    <div class="cpd-title">🏢 تدريب القيادات مدير/ وكيل إدارة تعليمية 2026/2025</div>
+                    <div class="cpd-stats">
+                        <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{cpd_p4_total}</span></div>
+                        <div class="stat-item" style="color: #4ade80;">اجتياز<span>{cpd_p4_pass}</span></div>
+                        <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p4_fail}</span></div>
+                        <div class="stat-item" style="color: #fbbf24;">عدم حضور<span>{cpd_p4_abs}</span></div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        sq = st.text_input("🔍 بحث مخصص داخل كشف منصة الوزارة CPD:")
+        ddf = df_cpd
+        if sq:
+            mask = df_cpd.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)
+            ddf = df_cpd[mask]
+            st.info(f"عدد النتائج المطابقة للبحث: {len(ddf)}")
         st.dataframe(ddf, use_container_width=True)
     else:
-        st.error("الملف غير متوفر.")
+        st.error("ملف منصة الوزارة CPD غير متوفر.")
 
 # --- تذييل الصفحة (Footer) ---
 st.markdown("""
