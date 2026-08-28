@@ -74,6 +74,8 @@ st.markdown("""
     .metric-card-5 { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
     .metric-card-6 { background: linear-gradient(135deg, #cb356b 0%, #bd3f32 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
     .metric-card-7 { background: linear-gradient(135deg, #3a7bd5 0%, #3a6073 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
+    .metric-card-8 { background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
+    .metric-card-9 { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; }
     
     .cpd-card-box { background: #1e293b; border: 1px solid #334155; padding: 15px; border-radius: 12px; color: white; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
     .cpd-total-box { background: linear-gradient(135deg, #0f172a 100%, #1e3a8a 0%); border: 2px solid #3b82f6; padding: 18px; border-radius: 14px; color: white; margin-bottom: 25px; box-shadow: 0 8px 16px rgba(0,0,0,0.3); }
@@ -161,6 +163,7 @@ c_cader = len(df_cader) if df_cader is not None else 0
 c_reassign = len(df_reassign) if df_reassign is not None else 0
 c_batch1 = len(df_batch1) if df_batch1 is not None else 0
 c_batch2 = len(df_batch2) if df_batch2 is not None else 0
+c_cpd = len(df_cpd) if df_cpd is not None else 0
 
 # دالة استخراج إحصائيات منصة الوزارة CPD
 def get_cpd_exact_stats(df, program_keyword):
@@ -229,16 +232,18 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
         check_and_display(df_cpd, "برامج منصة الوزارة CPD")
         st.markdown("---")
 
-    # البطاقات الإحصائية الملونة للبرامج الأساسية
+    # البطاقات الإحصائية الملونة للبرامج الأساسية (تتضمن الآن منصة الوزارة CPD وقرار 160)
     st.markdown("### 📌 مؤشرات الإحصاء العامة لبرامج الفرع")
     col1, col2, col3 = st.columns(3)
 
     with col1:
         st.markdown(f'<div class="metric-card-1"><div class="card-title">معد البرامج التدريبية</div><div class="card-number">{c_training}</div></div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-card-7"><div class="card-title">اعتماد TOT</div><div class="card-number">{c_tot}</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="metric-card-8"><div class="card-title">منصة الوزارة CPD</div><div class="card-number">{c_cpd}</div></div>', unsafe_allow_html=True)
     with col2:
         st.markdown(f'<div class="metric-card-2"><div class="card-title">المسمى الوظيفي</div><div class="card-number">{c_job}</div></div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-card-5"><div class="card-title">معلم مساعد (الدفعة الأولى)</div><div class="card-number">{c_batch1}</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="metric-card-9"><div class="card-title">إعادة التعيين (قرار 160)</div><div class="card-number">{c_reassign}</div></div>', unsafe_allow_html=True)
     with col3:
         st.markdown(f'<div class="metric-card-3"><div class="card-title">التسكين علي الكادر</div><div class="card-number">{c_cader}</div></div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-card-6"><div class="card-title">معلم مساعد (الدفعة الثانية)</div><div class="card-number">{c_batch2}</div></div>', unsafe_allow_html=True)
@@ -316,7 +321,7 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
     st.markdown("### 📈 التحليل البصري ومقارنة أعداد السجلات للبرامج")
     chart_data = pd.DataFrame({
         "البرنامج": ["معد البرامج", "اعتماد TOT", "المسمى الوظيفي", "التسكين", "قرار 160", "معلم مساعد 1", "معلم مساعد 2", "منصة الوزارة CPD"],
-        "عدد السجلات": [c_training, c_tot, c_job, c_cader, c_reassign, c_batch1, c_batch2, (len(df_cpd) if df_cpd is not None else 0)]
+        "عدد السجلات": [c_training, c_tot, c_job, c_cader, c_reassign, c_batch1, c_batch2, c_cpd]
     })
 
     chart = alt.Chart(chart_data).mark_bar(color="#3b82f6", cornerRadiusTopLeft=4, cornerRadiusTopRight=4).encode(
@@ -327,7 +332,7 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
 
     st.altair_chart(chart, use_container_width=True)
 
-# 2. عرض قسم "معد البرامج التدريبية" (تم تعديل البحث ليشمل أي نص مطابق للاجتياز أو الإخفاق)
+# 2. عرض قسم "معد البرامج التدريبية"
 elif selected_option == "📁 معد البرامج":
     st.markdown('<p class="program-header">📁 معد البرامج التدريبية</p>', unsafe_allow_html=True)
     if df_training is not None:
@@ -343,7 +348,6 @@ elif selected_option == "📁 معد البرامج":
         
         if accre_col is not None:
             accre_series = df_training[accre_col].astype(str).str.strip()
-            # البحث المرن ليشمل الكلمات بغض النظر عن الاختلافات البسيطة في النص
             tr_passed = len(df_training[accre_series.str.contains("اجتاز|بنجاح", case=False, na=False)])
             tr_failed = len(df_training[accre_series.str.contains("لم يجتاز|لم يعتمد|راسب|عدم", case=False, na=False)])
         
