@@ -4,7 +4,7 @@ import altair as alt
 import os
 import base64
 
-# إعدادات الصفحة وعرض الواجهة بالشكل العريض وضمان فتح القائمة الجانبية بشكل سليم
+# إعدادات الصفحة
 st.set_page_config(
     page_title="بوابة الأكاديمية المهنية للمعلمين - فرع الجيزة", 
     page_icon="🏫", 
@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# تخصيص واجهة المستخدم والتنسيقات المتناسقة
+# تخصيص واجهة المستخدم والتنسيقات لمنع طي القائمة الجانبية وتداخل النصوص
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -22,6 +22,18 @@ st.markdown("""
     h3, .stMarkdown h3 {
         direction: rtl !important;
         text-align: right !important;
+    }
+    
+    /* منع طي أو انكماش الشريط الجانبي نهائياً وحل مشكلة تداخل الحروف */
+    [data-testid="collapsedControl"] {
+        display: none !important;
+    }
+    section[data-testid="stSidebar"] {
+        width: 300px !important;
+        min-width: 300px !important;
+    }
+    header[data-testid="stHeader"] button {
+        display: none !important;
     }
     
     /* تصميم الهيدر المركزي المتكامل */
