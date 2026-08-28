@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تخصيص واجهة المستخدم والتنسيقات المتناسقة
+# تخصيص واجهة المستخدم والتنسیقات المتناسقة
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -229,7 +229,7 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
         check_and_display(df_cpd, "برامج منصة الوزارة CPD")
         st.markdown("---")
 
-    # البطاقات الإحصائية الملونة للبرامج الأساسية (تمت إضافة اعتماد TOT)
+    # البطاقات الإحصائية الملونة للبرامج الأساسية
     st.markdown("### 📌 مؤشرات الإحصاء العامة لبرامج الفرع")
     col1, col2, col3 = st.columns(3)
 
@@ -368,13 +368,12 @@ elif selected_option == "📁 معد البرامج":
     else:
         st.error("تعذر العثور على ملف الإكسل الخاص بـ 'معد البرامج التدريبية' (training.xlsx).")
 
-# 3. عرض قسم "اعتماد TOT" والإحصائية المطلوبة بالتخصصات
+# 3. عرض قسم "اعتماد TOT"
 elif selected_option == "📁 اعتماد TOT":
     st.markdown('<p class="program-header">📁 اعتماد TOT</p>', unsafe_allow_html=True)
     if df_tot is not None:
         tot_total = len(df_tot)
         
-        # البحث عن عمود تخصص الاعتماد
         spec_col = None
         for col in df_tot.columns:
             if "تخصص الاعتماد" in str(col).strip():
@@ -384,7 +383,6 @@ elif selected_option == "📁 اعتماد TOT":
         if spec_col is not None:
             spec_counts = df_tot[spec_col].astype(str).str.strip().value_counts()
             
-            # بطاقة الإجمالي العام لـ TOT
             st.markdown(f"""
                 <div class="cpd-total-box">
                     <div class="cpd-total-title">🌟 إحصائيات برنامج اعتماد TOT</div>
@@ -395,7 +393,6 @@ elif selected_option == "📁 اعتماد TOT":
                 </div>
             """, unsafe_allow_html=True)
             
-            # عرض توزيع التخصصات في أعمدة منسقة وأنيقة
             st.markdown("### 📋 تفصيل أعداد المعلمين بكل تخصص:")
             spec_cols = st.columns(3)
             idx = 0
@@ -409,7 +406,7 @@ elif selected_option == "📁 اعتماد TOT":
                     """, unsafe_allow_html=True)
                 idx += 1
         else:
-            st.warning("⚠️ لم يتم العثور على عمود 'تخصص الاعتماد' في ملف Accrediation.xlsx، سيتم عرض الإجمالي فقط.")
+            st.warning("⚠️ لم يتم العثور على عمود 'تخصص الاعتماد' في ملف Accrediation.xlsx.")
             st.metric(label="إجمالي المتقدمين", value=tot_total)
         
         st.markdown("<br>", unsafe_allow_html=True)
@@ -424,17 +421,60 @@ elif selected_option == "📁 اعتماد TOT":
     else:
         st.error("تعذر العثور على ملف الإكسل الخاص بـ 'اعتماد TOT' (Accrediation.xlsx).")
 
-# بقية الأقسام الأخرى
+# 4. عرض قسم "المسمى الوظيفي" مع الإحصائيات المطلوبة (الإجمالي، الجيزة، المنتدبين)
 elif selected_option == "📁 المسمى الوظيفي":
     st.markdown('<p class="program-header">📁 المسمى الوظيفي</p>', unsafe_allow_html=True)
     if df_job is not None:
-        st.metric(label="إجمالي السجلات", value=len(df_job))
-        sq = st.text_input("بحث مخصص:")
-        ddf = df_job[df_job.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)] if sq else df_job
+        job_total = len(df_job)
+        giza_count = 0
+        ext_count = 0
+        
+        branch_col = None
+        admin_col = None
+        
+        for col in df_job.columns:
+            col_s = str(col).strip()
+            if "الفرع" in col_s:
+                branch_col = col
+            elif "الادارة" in col_s or "الإدارة" in col_s:
+                admin_col = col
+                
+        # حساب إحصائيات الجيزة والمنتدبين بناءً على الأعمدة المتوفرة
+        if branch_col is not None:
+            branch_series = df_job[branch_col].astype(str).str.strip()
+            giza_count = len(df_job[branch_series.str.contains("الجيزة", case=False, na=False)])
+            ext_count = job_total - giza_count
+        elif admin_col is not None:
+            admin_series = df_job[admin_col].astype(str).str.strip()
+            # نفترض أن إدارات الجيزة تحتوي على كلمة الجيزة أو إدارات معروفة، أو نقيس العكس
+            giza_count = len(df_job[admin_series.str.contains("الجيزة", case=False, na=False)])
+            ext_count = job_total - giza_count
+        else:
+            giza_count = job_total
+            ext_count = 0
+
+        st.markdown(f"""
+            <div class="cpd-total-box">
+                <div class="cpd-total-title">📊 إحصائيات برنامج المسمى الوظيفي</div>
+                <div class="cpd-stats">
+                    <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{job_total}</span></div>
+                    <div class="stat-item" style="color: #4ade80;">إجمالي محافظة الجيزة<span>{giza_count}</span></div>
+                    <div class="stat-item" style="color: #f87171;">إجمالي المنتدبين (من خارج الجيزة)<span>{ext_count}</span></div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        sq = st.text_input("🔍 بحث مخصص داخل كشف المسمى الوظيفي:")
+        ddf = df_job
+        if sq:
+            mask = df_job.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)
+            ddf = df_job[mask]
+            st.info(f"عدد النتائج المطابقة للبحث: {len(ddf)}")
         st.dataframe(ddf, use_container_width=True)
     else:
-        st.error("الملف غير متوفر.")
+        st.error("ملف المسمى الوظيفي (job.xlsx) غير متوفر.")
 
+# بقية الأقسام الأخرى
 elif selected_option == "📁 التسكين علي الكادر":
     st.markdown('<p class="program-header">📁 التسكين علي الكادر</p>', unsafe_allow_html=True)
     if df_cader is not None:
