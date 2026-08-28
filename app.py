@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تخصيص واجهة المستخدم والتنسیقات المتناسقة
+# تخصيص واجهة المستخدم والتنسيقات المتناسقة
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -327,7 +327,7 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
 
     st.altair_chart(chart, use_container_width=True)
 
-# 2. عرض قسم "معد البرامج التدريبية"
+# 2. عرض قسم "معد البرامج التدريبية" (تم تعديل البحث ليشمل أي نص مطابق للاجتياز أو الإخفاق)
 elif selected_option == "📁 معد البرامج":
     st.markdown('<p class="program-header">📁 معد البرامج التدريبية</p>', unsafe_allow_html=True)
     if df_training is not None:
@@ -343,8 +343,9 @@ elif selected_option == "📁 معد البرامج":
         
         if accre_col is not None:
             accre_series = df_training[accre_col].astype(str).str.strip()
-            tr_passed = len(df_training[accre_series.str.contains("اجتياز الاعتماد بنجاح", case=False, na=False)])
-            tr_failed = len(df_training[accre_series.str.contains("لم يجتاز", case=False, na=False)])
+            # البحث المرن ليشمل الكلمات بغض النظر عن الاختلافات البسيطة في النص
+            tr_passed = len(df_training[accre_series.str.contains("اجتاز|بنجاح", case=False, na=False)])
+            tr_failed = len(df_training[accre_series.str.contains("لم يجتاز|لم يعتمد|راسب|عدم", case=False, na=False)])
         
         st.markdown(f"""
             <div class="cpd-total-box">
@@ -421,7 +422,7 @@ elif selected_option == "📁 اعتماد TOT":
     else:
         st.error("تعذر العثور على ملف الإكسل الخاص بـ 'اعتماد TOT' (Accrediation.xlsx).")
 
-# 4. عرض قسم "المسمى الوظيفي" مع الإحصائيات المطلوبة (الإجمالي، الجيزة، المنتدبين)
+# 4. عرض قسم "المسمى الوظيفي"
 elif selected_option == "📁 المسمى الوظيفي":
     st.markdown('<p class="program-header">📁 المسمى الوظيفي</p>', unsafe_allow_html=True)
     if df_job is not None:
@@ -439,14 +440,12 @@ elif selected_option == "📁 المسمى الوظيفي":
             elif "الادارة" in col_s or "الإدارة" in col_s:
                 admin_col = col
                 
-        # حساب إحصائيات الجيزة والمنتدبين بناءً على الأعمدة المتوفرة
         if branch_col is not None:
             branch_series = df_job[branch_col].astype(str).str.strip()
             giza_count = len(df_job[branch_series.str.contains("الجيزة", case=False, na=False)])
             ext_count = job_total - giza_count
         elif admin_col is not None:
             admin_series = df_job[admin_col].astype(str).str.strip()
-            # نفترض أن إدارات الجيزة تحتوي على كلمة الجيزة أو إدارات معروفة، أو نقيس العكس
             giza_count = len(df_job[admin_series.str.contains("الجيزة", case=False, na=False)])
             ext_count = job_total - giza_count
         else:
