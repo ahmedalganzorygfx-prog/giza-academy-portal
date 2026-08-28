@@ -14,6 +14,10 @@ from reportlab.lib import colors
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
+# استيراد مكتبات تصحيح النصوص العربية للـ PDF
+import arabic_reshaper
+from bidi.algorithm import get_display
+
 # إعدادات الصفحة وعرض الواجهة بالشكل العريض
 st.set_page_config(
     page_title="بوابة الأكاديمية المهنية للمعلمين - فرع الجيزة", 
@@ -111,7 +115,6 @@ st.markdown("""
     .card-title { font-size: 12px !important; font-weight: bold; margin-bottom: 3px; }
     .card-number { font-size: 18px; font-weight: bold; }
     
-    /* تصميم وتلوين عنوان القسم */
     .program-header { 
         font-size: 16px !important; 
         font-weight: bold; 
@@ -148,11 +151,18 @@ except Exception:
     pass
 
 def fix_arabic(text):
-    """دالة معالجة النصوص للـ PDF"""
-    return str(text)
+    """دالة لضبط ومعالجة النصوص العربية لتظهر بشكل صحيح ومتصل في الـ PDF"""
+    if not text:
+        return ""
+    try:
+        reshaped_text = arabic_reshaper.reshape(str(text))
+        bidi_text = get_display(reshaped_text)
+        return bidi_text
+    except Exception:
+        return str(text)
 
 def generate_pdf_report(title, stats_dict, tables_data=None):
-    """دالة لتوليد ملف PDF احترافي للإحصائيات بدون أخطاء باراجراف"""
+    """دالة لتوليد ملف PDF احترافي ودقيق باللغة العربية"""
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
     elements = []
@@ -165,7 +175,7 @@ def generate_pdf_report(title, stats_dict, tables_data=None):
             'ArabicTitle',
             parent=styles['Heading1'],
             fontName=arabic_font_name,
-            fontSize=16,
+            fontSize=15,
             alignment=1, # Center
             textColor=colors.HexColor('#0f172a'),
             spaceAfter=15
@@ -174,7 +184,7 @@ def generate_pdf_report(title, stats_dict, tables_data=None):
             'ArabicSub',
             parent=styles['Heading2'],
             fontName=arabic_font_name,
-            fontSize=13,
+            fontSize=12,
             alignment=2, # Right
             textColor=colors.HexColor('#1e3a8a'),
             spaceAfter=8
@@ -183,7 +193,7 @@ def generate_pdf_report(title, stats_dict, tables_data=None):
             'ArabicFooter',
             parent=styles['Normal'],
             fontName=arabic_font_name,
-            fontSize=9,
+            fontSize=8,
             alignment=1, # Center
             textColor=colors.HexColor('#64748b')
         )
@@ -197,27 +207,27 @@ def generate_pdf_report(title, stats_dict, tables_data=None):
     elements.append(Paragraph(fix_arabic(main_title_text), title_style))
     elements.append(Spacer(1, 10))
     
-    # إضافة الإحصائيات العامة كجدول منظم
+    # جدول الإحصائيات العامة
     stat_rows = [[fix_arabic("البند الإحصائي"), fix_arabic("القيمة")]]
     for key, val in stats_dict.items():
         stat_rows.append([fix_arabic(str(key)), fix_arabic(str(val))])
         
-    t_stats = Table(stat_rows, colWidths=[300, 150])
+    t_stats = Table(stat_rows, colWidths=[320, 130])
     t_stats.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e293b')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, -1), arabic_font_name),
-        ('FONTSIZE', (0, 0), (-1, -1), 11),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ('TOPPADDING', (0, 0), (-1, -1), 5),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
         ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')])
     ]))
     elements.append(t_stats)
     elements.append(Spacer(1, 15))
     
-    # إضافة الجداول التفصيلية (مثل التخصصات أو الإدارات إذا وجدت)
+    # الجداول التفصيلية إن وجدت
     if tables_data:
         for subtitle, data_dict in tables_data.items():
             elements.append(Paragraph(fix_arabic(subtitle), subtitle_style))
@@ -226,23 +236,23 @@ def generate_pdf_report(title, stats_dict, tables_data=None):
             for k, v in data_dict.items():
                 sub_rows.append([fix_arabic(str(k)), fix_arabic(str(v))])
                 
-            t_sub = Table(sub_rows, colWidths=[300, 150])
+            t_sub = Table(sub_rows, colWidths=[320, 130])
             t_sub.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#334155')),
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
                 ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                 ('FONTNAME', (0, 0), (-1, -1), arabic_font_name),
-                ('FONTSIZE', (0, 0), (-1, -1), 10),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-                ('TOPPADDING', (0, 0), (-1, -1), 5),
+                ('FONTSIZE', (0, 0), (-1, -1), 9),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+                ('TOPPADDING', (0, 0), (-1, -1), 4),
                 ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
                 ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')])
             ]))
             elements.append(t_sub)
-            elements.append(Spacer(1, 12))
+            elements.append(Spacer(1, 10))
 
-    # ذيل التقرير
-    elements.append(Spacer(1, 20))
+    # تذييل التقرير
+    elements.append(Spacer(1, 15))
     elements.append(Paragraph(fix_arabic("تم استخراج هذا التقرير تلقائياً من بوابة الأكاديمية المهنية للمعلمين - فرع الجيزة"), footer_style))
 
     doc.build(elements)
