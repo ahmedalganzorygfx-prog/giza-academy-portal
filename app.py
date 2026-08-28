@@ -25,7 +25,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تخصيص واجهة المستخدم وتعديل لون عناوين الأقسام وتنسيقها
+# تخصيص واجهة المستخدم
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -38,7 +38,6 @@ st.markdown("""
         font-size: 16px !important;
     }
     
-    /* حل جذري لمشكلة القائمة الجانبية: إخفاء النصوص تماماً عند تصغيرها */
     [data-testid="stSidebar"][aria-expanded="false"] {
         width: 0px !important;
         min-width: 0px !important;
@@ -50,7 +49,6 @@ st.markdown("""
         display: none !important;
     }
 
-    /* تصميم الهيدر المركزي */
     .app-header-box {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         padding: 20px 15px;
@@ -94,7 +92,6 @@ st.markdown("""
         text-align: center;
     }
 
-    /* البطاقات الإحصائية المصغرة */
     .metric-card-1 { background: linear-gradient(135deg, #1f4037 0%, #99f2c8 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
     .metric-card-2 { background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
     .metric-card-3 { background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%); padding: 10px; border-radius: 10px; color: #333; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
@@ -151,12 +148,14 @@ except Exception:
     pass
 
 def fix_arabic(text):
-    """دالة لضبط ومعالجة النصوص العربية لتظهر بشكل صحيح ومتصل في الـ PDF"""
+    """دالة ذكية ومحدثة لمعالجة وتنسيق النصوص المختلطة (عربي، إنجليزي، رموز) للـ PDF"""
     if not text:
         return ""
     try:
-        reshaped_text = arabic_reshaper.reshape(str(text))
-        bidi_text = get_display(reshaped_text)
+        text_str = str(text)
+        # استخدام الخوارزمية مع تفعيل الحفاظ على الترتيب المختلط لمنع تقطيع الكلمات والرموز والشرطات
+        reshaped_text = arabic_reshaper.reshape(text_str)
+        bidi_text = get_display(reshaped_text, base_dir='R')
         return bidi_text
     except Exception:
         return str(text)
@@ -311,7 +310,6 @@ menu_options = [
 selected_option = st.pills("🗂️ الانتقال السريع بين الأقسام:", menu_options, default=menu_options[0])
 st.markdown("---")
 
-# دالة لتحميل الملفات
 def load_excel_file(filename):
     if uploaded_file_override is not None and uploaded_file_override.name == filename:
         try:
@@ -332,7 +330,6 @@ def load_excel_file(filename):
             return None
     return None
 
-# تحميل الملفات
 df_training = load_excel_file("training.xlsx")
 df_tot = load_excel_file("Accrediation.xlsx")
 df_job = load_excel_file("job.xlsx")
@@ -342,7 +339,6 @@ df_batch1 = load_excel_file("batch1.xlsx")
 df_batch2 = load_excel_file("batch2.xlsx")
 df_cpd = load_excel_file("CPD To 12-5-2026.xlsx")
 
-# حساب أعداد السجلات الأساسية
 c_training = len(df_training) if df_training is not None else 0
 c_tot = len(df_tot) if df_tot is not None else 0
 c_job = len(df_job) if df_job is not None else 0
@@ -352,7 +348,6 @@ c_batch1 = len(df_batch1) if df_batch1 is not None else 0
 c_batch2 = len(df_batch2) if df_batch2 is not None else 0
 c_cpd = len(df_cpd) if df_cpd is not None else 0
 
-# دالة عرض الجدول والبيانات مع أزرار التصدير (CSV + PDF للإحصائيات)
 def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword="التخصص علي الكادر"):
     if df is not None:
         total_records = len(df)
@@ -395,7 +390,6 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword=
             </div>
         """, unsafe_allow_html=True)
         
-        # زر تحميل تقرير الـ PDF للإحصائيات
         pdf_stats_dict = {"إجمالي السجلات": total_records}
         if has_specs:
             pdf_stats_dict["عدد التخصصات"] = len(spec_counts)
@@ -465,7 +459,6 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword=
     else:
         st.error(f"ملف بيانات {batch_title} غير متوفر. يمكنك رفعه من القائمة الجانبية.")
 
-# دالة استخراج إحصائيات منصة الوزارة CPD
 def get_cpd_exact_stats(df, program_keyword):
     if df is not None:
         prog_col = None
@@ -502,7 +495,6 @@ cpd_grand_pass = cpd_p1_pass + cpd_p2_pass + cpd_p3_pass + cpd_p4_pass
 cpd_grand_fail = cpd_p1_fail + cpd_p2_fail + cpd_p3_fail + cpd_p4_fail
 cpd_grand_abs = cpd_p1_abs + cpd_p2_abs + cpd_p3_abs + cpd_p4_abs
 
-# 1. شاشة الرئيسية والبحث الشامل
 if selected_option == "🏠 الرئيسية والبحث الشامل":
     st.markdown("### 🔎 البحث الشامل بالكود في كافة الملفات والبرامج")
     global_search_code = st.text_input("أدخل كود المعلم للبحث الفوري عنه في جميع الكشوفات:", placeholder="مثال: 3089097")
@@ -532,7 +524,6 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
         check_and_display(df_cpd, "برامج منصة الوزارة CPD")
         st.markdown("---")
 
-    # البطاقات الإحصائية المصغرة والمدمجة
     st.markdown("### 📌 مؤشرات الإحصاء العامة لبرامج الفرع")
     col1, col2, col3 = st.columns(3)
 
@@ -550,7 +541,6 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # تحضير بيانات الرسوم البيانية للأعمدة فقط
     chart_data = pd.DataFrame({
         "البرنامج": ["معد البرامج", "اعتماد TOT", "المسمى الوظيفي", "التسكين", "قرار 160", "معلم مساعد 1", "معلم مساعد 2", "منصة الوزارة CPD"],
         "عدد السجلات": [c_training, c_tot, c_job, c_cader, c_reassign, c_batch1, c_batch2, c_cpd]
@@ -565,7 +555,6 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
     
     st.altair_chart(bar_chart, use_container_width=True)
 
-# 2. عرض قسم "معد البرامج التدريبية"
 elif selected_option == "📁 معد البرامج":
     st.markdown('<p class="program-header">📁 معد البرامج التدريبية</p>', unsafe_allow_html=True)
     if df_training is not None:
@@ -595,7 +584,6 @@ elif selected_option == "📁 معد البرامج":
             </div>
         """, unsafe_allow_html=True)
         
-        # زر تصدير إحصائيات معد البرامج PDF
         tr_pdf_bytes = generate_pdf_report("معد البرامج التدريبية", {
             "إجمالي السجلات": tr_total,
             "اجتاز الاعتماد بنجاح": tr_passed,
@@ -622,7 +610,6 @@ elif selected_option == "📁 معد البرامج":
     else:
         st.error("تعذر العثور على ملف الإكسل الخاص بـ 'معد البرامج التدريبية' (training.xlsx).")
 
-# 3. عرض قسم "اعتماد TOT"
 elif selected_option == "📁 اعتماد TOT":
     st.markdown('<p class="program-header">📁 اعتماد TOT</p>', unsafe_allow_html=True)
     if df_tot is not None:
@@ -686,7 +673,6 @@ elif selected_option == "📁 اعتماد TOT":
     else:
         st.error("تعذر العثور على ملف الإكسل الخاص بـ 'اعتماد TOT' (Accrediation.xlsx).")
 
-# 4. عرض قسم "المسمى الوظيفي"
 elif selected_option == "📁 المسمى الوظيفي":
     st.markdown('<p class="program-header">📁 المسمى الوظيفي</p>', unsafe_allow_html=True)
     if df_job is not None:
@@ -749,7 +735,6 @@ elif selected_option == "📁 المسمى الوظيفي":
     else:
         st.error("ملف المسمى الوظيفي (job.xlsx) غير متوفر.")
 
-# بقية الأقسام الأخرى
 elif selected_option == "📁 التسكين علي الكادر":
     st.markdown('<p class="program-header">📁 التسكين علي الكادر</p>', unsafe_allow_html=True)
     display_batch_stats_and_table(df_cader, "التسكين علي الكادر", has_specs=True, spec_keyword="التخصص علي الكادر")
