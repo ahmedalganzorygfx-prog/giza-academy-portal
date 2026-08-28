@@ -203,7 +203,7 @@ def display_batch_stats_and_table(df, batch_title):
         
         # عرض تخصصات المعلمين
         if not spec_counts.empty:
-            st.markdown("### 📋 تفصيل أعداد المعلمين بكل تخصص:")
+            st.markdown("### 📋 تفصيل أعداد ملفات المعلمين بكل تخصص:")
             spec_cols = st.columns(3)
             idx = 0
             for spec_name, spec_count in spec_counts.items():
@@ -219,7 +219,7 @@ def display_batch_stats_and_table(df, batch_title):
 
         # عرض إدارات المعلمين
         if not admin_counts.empty:
-            st.markdown("### 🏫 تفصيل أعداد المعلمين بكل إدارة تعليمية:")
+            st.markdown("### 🏫 تفصيل أعداد ملفات المعلمين بكل إدارة تعليمية:")
             admin_cols = st.columns(3)
             idx = 0
             for admin_name, admin_count in admin_counts.items():
