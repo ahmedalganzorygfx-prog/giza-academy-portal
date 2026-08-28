@@ -166,7 +166,7 @@ c_batch2 = len(df_batch2) if df_batch2 is not None else 0
 c_cpd = len(df_cpd) if df_cpd is not None else 0
 
 # دالة عامة لإحصائيات التخصصات والإدارات معاً
-def display_batch_stats_and_table(df, batch_title, has_specs=True):
+def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword="التخصص علي الكادر"):
     if df is not None:
         total_records = len(df)
         spec_col = None
@@ -174,7 +174,7 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True):
         
         for col in df.columns:
             col_s = str(col).strip()
-            if has_specs and ("التخصص" in col_s or "المادة" in col_s or "مادة" in col_s):
+            if has_specs and (spec_keyword in col_s or "التخصص علي الكادر" in col_s or "التخصص" in col_s or "المادة" in col_s):
                 spec_col = col
             elif "الادارة" in col_s or "الإدارة" in col_s:
                 admin_col = col
@@ -202,7 +202,7 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True):
         """, unsafe_allow_html=True)
         
         if has_specs and not spec_counts.empty:
-            st.markdown("### 📋 تفصيل أعداد المعلمين بكل تخصص:")
+            st.markdown(f"### 📋 تفصيل أعداد المعلمين بكل تخصص (حسب عمود التخصص على الكادر):")
             spec_cols = st.columns(3)
             idx = 0
             for spec_name, spec_count in spec_counts.items():
@@ -489,25 +489,19 @@ elif selected_option == "📁 المسمى الوظيفي":
 # بقية الأقسام الأخرى
 elif selected_option == "📁 التسكين علي الكادر":
     st.markdown('<p class="program-header">📁 التسكين علي الكادر</p>', unsafe_allow_html=True)
-    if df_cader is not None:
-        st.metric(label="إجمالي السجلات", value=len(df_cader))
-        sq = st.text_input("بحث مخصص:")
-        ddf = df_cader[df_cader.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)] if sq else df_cader
-        st.dataframe(ddf, use_container_width=True)
-    else:
-        st.error("الملف غير متوفر.")
+    display_batch_stats_and_table(df_cader, "التسكين علي الكادر", has_specs=True, spec_keyword="التخصص علي الكادر")
 
 elif selected_option == "📁 قرار 160":
     st.markdown('<p class="program-header">📁 إعادة التعيين (قرار 160)</p>', unsafe_allow_html=True)
-    display_batch_stats_and_table(df_reassign, "إعادة التعيين (قرار 160)", has_specs=False)
+    display_batch_stats_and_table(df_reassign, "إعادة التعيين (قرار 160)", has_specs=True, spec_keyword="التخصص علي الكادر")
 
 elif selected_option == "📁 ملفات معلم مساعد الدفعة 1":
     st.markdown('<p class="program-header">📁 ملفات معلم مساعد الدفعة الأولى</p>', unsafe_allow_html=True)
-    display_batch_stats_and_table(df_batch1, "معلم مساعد الدفعة الأولى", has_specs=True)
+    display_batch_stats_and_table(df_batch1, "معلم مساعد الدفعة الأولى", has_specs=True, spec_keyword="التخصص علي الكادر")
 
 elif selected_option == "📁 ملفات معلم مساعد الدفعة 2":
     st.markdown('<p class="program-header">📁 ملفات معلم مساعد الدفعة الثانية</p>', unsafe_allow_html=True)
-    display_batch_stats_and_table(df_batch2, "معلم مساعد الدفعة الثانية", has_specs=True)
+    display_batch_stats_and_table(df_batch2, "معلم مساعد الدفعة الثانية", has_specs=True, spec_keyword="التخصص علي الكادر")
 
 elif selected_option == "📁 منصة الوزارة CPD":
     st.markdown('<p class="program-header">📊 إحصائيات نتيجة منصة CPD حتي 12-5-2026</p>', unsafe_allow_html=True)
