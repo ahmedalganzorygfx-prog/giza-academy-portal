@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تخصيص واجهة المستخدم وتصغير العناوين والبطاقات وحل مشكلة القائمة الجانبية تماماً
+# تخصيص واجهة المستخدم وتعديل لون عناوين الأقسام لتكون واضحة
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -24,7 +24,7 @@ st.markdown("""
         font-size: 16px !important;
     }
     
-    /* حل جذري لمشكلة القائمة الجانبية: إخفاء النصوص تماماً عند تصغيرها لتجنب الحروف العمودية */
+    /* حل جذري لمشكلة القائمة الجانبية: إخفاء النصوص تماماً عند تصغيرها */
     [data-testid="stSidebar"][aria-expanded="false"] {
         width: 0px !important;
         min-width: 0px !important;
@@ -36,7 +36,7 @@ st.markdown("""
         display: none !important;
     }
 
-    /* تصميم الهيدر المركزي المتكامل بتشغيل مساحة أصغر */
+    /* تصميم الهيدر المركزي */
     .app-header-box {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         padding: 20px 15px;
@@ -80,7 +80,7 @@ st.markdown("""
         text-align: center;
     }
 
-    /* تصغير البطاقات الإحصائية لتوفير مساحة أوسع */
+    /* البطاقات الإحصائية المصغرة */
     .metric-card-1 { background: linear-gradient(135deg, #1f4037 0%, #99f2c8 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
     .metric-card-2 { background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
     .metric-card-3 { background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%); padding: 10px; border-radius: 10px; color: #333; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
@@ -100,7 +100,21 @@ st.markdown("""
 
     .card-title { font-size: 12px !important; font-weight: bold; margin-bottom: 3px; }
     .card-number { font-size: 18px; font-weight: bold; }
-    .program-header { font-size: 16px !important; font-weight: bold; color: #1e293b; border-bottom: 2px solid #3b82f6; padding-bottom: 6px; margin-top: 15px; margin-bottom: 10px; }
+    
+    /* تصميم وتلوين عنوان القسم (معدل ليظهر بوضوح تام وخلفية جذابة) */
+    .program-header { 
+        font-size: 16px !important; 
+        font-weight: bold; 
+        color: #ffffff !important; 
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        padding: 10px 15px;
+        border-radius: 8px;
+        border-right: 4px solid #38bdf8;
+        border-bottom: none;
+        margin-top: 15px; 
+        margin-bottom: 10px; 
+        box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -122,7 +136,7 @@ if found_logo_path:
 else:
     logo_display_html = '<div style="color: #f87171; font-size: 11px; margin-bottom: 8px;">⚠️ لم يتم العثور على الشعار</div>'
 
-# عرض الهيدر الرئيسي المصغر والمدمج
+# عرض الهيدر الرئيسي
 st.markdown(f"""
     <div class="app-header-box">
         {logo_display_html}
@@ -618,7 +632,7 @@ elif selected_option == "📁 منصة الوزارة CPD":
                     <div class="cpd-stats">
                         <div class="stat-item" style="color: #38bdf8;">الإجمالي<span>{cpd_p4_total}</span></div>
                         <div class="stat-item" style="color: #4ade80;">اجتياز<span>{cpd_p4_pass}</span></div>
-                        <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p4_fail}</span>C</div>
+                        <div class="stat-item" style="color: #f87171;">عدم اجتياز<span>{cpd_p4_fail}</span></div>
                         <div class="stat-item" style="color: #fbbf24;">غياب<span>{cpd_p4_abs}</span></div>
                     </div>
                 </div>
