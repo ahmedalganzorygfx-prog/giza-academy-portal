@@ -489,7 +489,13 @@ elif selected_option == "📁 المسمى الوظيفي":
 # بقية الأقسام الأخرى
 elif selected_option == "📁 التسكين علي الكادر":
     st.markdown('<p class="program-header">📁 التسكين علي الكادر</p>', unsafe_allow_html=True)
-    display_batch_stats_and_table(df_cader, "التسكين علي الكادر", has_specs=True)
+    if df_cader is not None:
+        st.metric(label="إجمالي السجلات", value=len(df_cader))
+        sq = st.text_input("بحث مخصص:")
+        ddf = df_cader[df_cader.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)] if sq else df_cader
+        st.dataframe(ddf, use_container_width=True)
+    else:
+        st.error("الملف غير متوفر.")
 
 elif selected_option == "📁 قرار 160":
     st.markdown('<p class="program-header">📁 إعادة التعيين (قرار 160)</p>', unsafe_allow_html=True)
