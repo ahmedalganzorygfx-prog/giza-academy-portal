@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تخصيص واجهة المستخدم والتنسيقات المتناسقة
+# تخصيص واجهة المستخدم والتنسیقات المتناسقة
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -117,6 +117,15 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
+# --- زر تحكم جانبي لرفع الملفات عند الحاجة ---
+with st.sidebar:
+    st.markdown("### ⚙️ إدارة وتحديث الملفات")
+    st.info("إذا لم يتوفر الملف على السيرفر، يمكنك رفعه مباشرة هنا:")
+    
+    uploaded_file_override = st.file_uploader("رفع ملف إكسل عام أو بديل", type=["xlsx", "xls"])
+    if uploaded_file_override is not None:
+        st.success(f"تم تحميل الملف: {uploaded_file_override.name}")
+
 # --- القائمة الرئيسية الأفقية تحت العنوان الرئيسي مباشرة ---
 menu_options = [
     "🏠 الرئيسية والبحث الشامل",
@@ -135,6 +144,15 @@ st.markdown("---")
 
 # دالة لتحميل الملفات
 def load_excel_file(filename):
+    if uploaded_file_override is not None and uploaded_file_override.name == filename:
+        try:
+            df = pd.read_excel(uploaded_file_override)
+            df.index = range(1, len(df) + 1)
+            df.index.name = "م"
+            return df
+        except Exception:
+            pass
+            
     if os.path.exists(filename):
         try:
             df = pd.read_excel(filename)
@@ -165,7 +183,7 @@ c_batch1 = len(df_batch1) if df_batch1 is not None else 0
 c_batch2 = len(df_batch2) if df_batch2 is not None else 0
 c_cpd = len(df_cpd) if df_cpd is not None else 0
 
-# دالة محسّنة بدقة للبحث عن عمود "التخصص على الكادر" وتجنب أعمدة المؤهلات
+# دالة عرض الجدول والبيانات مع زر التصدير (Export)
 def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword="التخصص علي الكادر"):
     if df is not None:
         total_records = len(df)
@@ -174,12 +192,10 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword=
         
         for col in df.columns:
             col_s = str(col).strip()
-            # البحث الدقيق عن عمود التخصص على الكادر مع استبعاد كلمة مؤهل تماماً
             if has_specs and ("التخصص علي الكادر" in col_s or "التخصص على الكادر" in col_s or (col_s == spec_keyword)):
                 spec_col = col
                 break
         
-        # إذا لم يُعثر عليه بالاسم الدقيق، نبحث عن كلمة تخصص بشرط ألا تحتوي على كلمة مؤهل
         if has_specs and spec_col is None:
             for col in df.columns:
                 col_s = str(col).strip()
@@ -187,7 +203,6 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword=
                     spec_col = col
                     break
 
-        # البحث عن عمود الإدارة
         for col in df.columns:
             col_s = str(col).strip()
             if "الادارة" in col_s or "الإدارة" in col_s:
@@ -212,7 +227,7 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword=
         """, unsafe_allow_html=True)
         
         if has_specs and not spec_counts.empty:
-            st.markdown(f"### 📋 تفصيل أعداد المعلمين بكل تخصص (حسب عمود التخصص على الكادر):")
+            st.markdown(f"### 📋 تفصيل أعداد المعلمين بكل تخصص:")
             spec_cols = st.columns(3)
             idx = 0
             for spec_name, spec_count in spec_counts.items():
@@ -247,9 +262,19 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword=
             mask = df.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)
             ddf = df[mask]
             st.info(f"عدد النتائج المطابقة للبحث: {len(ddf)}")
+        
+        # زر تحميل وتصدير النتائج إلى CSV
+        csv_data = ddf.to_csv(index=False).encode('utf-8-sig')
+        st.download_button(
+            label=f"📥 تصدير النتائج الحالية لملف CSV ({len(ddf)} سجل)",
+            data=csv_data,
+            file_name=f"{batch_title}_export.csv",
+            mime="text/csv",
+        )
+        
         st.dataframe(ddf, use_container_width=True)
     else:
-        st.error(f"ملف بيانات {batch_title} غير متوفر.")
+        st.error(f"ملف بيانات {batch_title} غير متوفر. يمكنك رفعه من القائمة الجانبية.")
 
 # دالة استخراج إحصائيات منصة الوزارة CPD
 def get_cpd_exact_stats(df, program_keyword):
@@ -336,20 +361,36 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # الرسوم البيانية الشاملة
-    st.markdown("### 📈 التحليل البصري ومقارنة أعداد السجلات للبرامج")
+    # تحضير بيانات الرسوم البيانية
     chart_data = pd.DataFrame({
         "البرنامج": ["معد البرامج", "اعتماد TOT", "المسمى الوظيفي", "التسكين", "قرار 160", "معلم مساعد 1", "معلم مساعد 2", "منصة الوزارة CPD"],
         "عدد السجلات": [c_training, c_tot, c_job, c_cader, c_reassign, c_batch1, c_batch2, c_cpd]
     })
 
-    chart = alt.Chart(chart_data).mark_bar(color="#3b82f6", cornerRadiusTopLeft=4, cornerRadiusTopRight=4).encode(
-        x=alt.X("البرنامج:N", sort=None, title="", axis=alt.Axis(labelAngle=0, labelFontSize=11)),
-        y=alt.Y("عدد السجلات:Q", title="إجمالي السجلات"),
-        tooltip=["البرنامج", "عدد السجلات"]
-    ).properties(height=320)
+    # تقسيم العرض إلى عمودين للرسم البياني العمودي والدائري (Pie Chart)
+    chart_col1, chart_col2 = st.columns(2)
 
-    st.altair_chart(chart, use_container_width=True)
+    with chart_col1:
+        st.markdown("### 📊 مقارنة أعداد السجلات (أعمدة بيانية)")
+        bar_chart = alt.Chart(chart_data).mark_bar(color="#3b82f6", cornerRadiusTopLeft=4, cornerRadiusTopRight=4).encode(
+            x=alt.X("البرنامج:N", sort=None, title="", axis=alt.Axis(labelAngle=-30, labelFontSize=11)),
+            y=alt.Y("عدد السجلات:Q", title="إجمالي السجلات"),
+            tooltip=["البرنامج", "عدد السجلات"]
+        ).properties(height=350)
+        st.altair_chart(bar_chart, use_container_width=True)
+
+    with chart_col2:
+        st.markdown("### 🥧 نسب وتوزيع السجلات (مخطط دائري Pie)")
+        pie_base = alt.Chart(chart_data).mark_arc(outerRadius=120, innerRadius=50).encode(
+            theta=alt.Theta("عدد السجلات:Q"),
+            color=alt.Color("البرنامج:N", legend=alt.Legend(title="البرامج", orient="right")),
+            tooltip=["البرنامج", "عدد السجلات"]
+        ).properties(height=350)
+        
+        pie_text = pie_base.mark_text(radius=140, size=11).encode(
+            text=alt.Text("عدد السجلات:Q")
+        )
+        st.altair_chart(pie_base + pie_text, use_container_width=True)
 
 # 2. عرض قسم "معد البرامج التدريبية"
 elif selected_option == "📁 معد البرامج":
@@ -388,6 +429,8 @@ elif selected_option == "📁 معد البرامج":
             display_df = df_training[mask]
             st.info(f"عدد النتائج المطابقة للبحث: {len(display_df)}")
         
+        csv_data = display_df.to_csv(index=False).encode('utf-8-sig')
+        st.download_button("📥 تصدير النتائج الحالية لملف CSV", data=csv_data, file_name="training_export.csv", mime="text/csv")
         st.dataframe(display_df, use_container_width=True)
     else:
         st.error("تعذر العثور على ملف الإكسل الخاص بـ 'معد البرامج التدريبية' (training.xlsx).")
@@ -441,6 +484,8 @@ elif selected_option == "📁 اعتماد TOT":
             display_df = df_tot[mask]
             st.info(f"عدد النتائج المطابقة للبحث: {len(display_df)}")
         
+        csv_data = display_df.to_csv(index=False).encode('utf-8-sig')
+        st.download_button("📥 تصدير النتائج الحالية لملف CSV", data=csv_data, file_name="tot_export.csv", mime="text/csv")
         st.dataframe(display_df, use_container_width=True)
     else:
         st.error("تعذر العثور على ملف الإكسل الخاص بـ 'اعتماد TOT' (Accrediation.xlsx).")
@@ -492,6 +537,9 @@ elif selected_option == "📁 المسمى الوظيفي":
             mask = df_job.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)
             ddf = df_job[mask]
             st.info(f"عدد النتائج المطابقة للبحث: {len(ddf)}")
+        
+        csv_data = ddf.to_csv(index=False).encode('utf-8-sig')
+        st.download_button("📥 تصدير النتائج الحالية لملف CSV", data=csv_data, file_name="job_export.csv", mime="text/csv")
         st.dataframe(ddf, use_container_width=True)
     else:
         st.error("ملف المسمى الوظيفي (job.xlsx) غير متوفر.")
@@ -586,6 +634,9 @@ elif selected_option == "📁 منصة الوزارة CPD":
             mask = df_cpd.astype(str).apply(lambda x: x.str.contains(sq, case=False, na=False)).any(axis=1)
             ddf = df_cpd[mask]
             st.info(f"عدد النتائج المطابقة للبحث: {len(ddf)}")
+        
+        csv_data = ddf.to_csv(index=False).encode('utf-8-sig')
+        st.download_button("📥 تصدير النتائج الحالية لملف CSV", data=csv_data, file_name="cpd_export.csv", mime="text/csv")
         st.dataframe(ddf, use_container_width=True)
     else:
         st.error("ملف منصة الوزارة CPD غير متوفر.")
