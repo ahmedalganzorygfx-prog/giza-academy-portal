@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تخصيص واجهة المستخدم والتنسيقات المتناسقة
+# تخصيص واجهة المستخدم والتنسيقات المتناسقة ومنع طي القائمة الجانبية
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -21,6 +21,11 @@ st.markdown("""
     h3, .stMarkdown h3 {
         direction: rtl !important;
         text-align: right !important;
+    }
+    
+    /* إخفاء زر تصغير القائمة الجانبية لمنع تداخل النصوص نهائياً */
+    button[kind="header"] {
+        display: none !important;
     }
     [data-testid="collapsedControl"] {
         display: none !important;
@@ -190,7 +195,7 @@ cpd_grand_pass = cpd_p1_pass + cpd_p2_pass + cpd_p3_pass + cpd_p4_pass
 cpd_grand_fail = cpd_p1_fail + cpd_p2_fail + cpd_p3_fail + cpd_p4_fail
 cpd_grand_abs = cpd_p1_abs + cpd_p2_abs + cpd_p3_abs + cpd_p4_abs
 
-# --- قائمة منسدلة (Drop-down list) للتنقل بين الأقسام بدلاً من التبويبات الكثيرة ---
+# --- قائمة منسدلة (Drop-down list) للتنقل بين الأقسام داخل الشريط الجانبي ---
 st.sidebar.markdown("### 🗂️ القائمة الرئيسية")
 selected_option = st.sidebar.selectbox(
     "اختر القسم المطلوب للانتقال إليه:",
