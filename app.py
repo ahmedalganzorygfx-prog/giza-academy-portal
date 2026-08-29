@@ -101,7 +101,7 @@ st.markdown("""
     .card-title { font-size: 12px !important; font-weight: bold; margin-bottom: 3px; }
     .card-number { font-size: 18px; font-weight: bold; }
     
-    /* تصميم وتلوين عنوان القسم (معدل ليظهر بوضوح تام وخلفية جذابة) */
+    /* تصميم وتلوين عنوان القسم */
     .program-header { 
         font-size: 16px !important; 
         font-weight: bold; 
@@ -446,7 +446,7 @@ elif selected_option == "📁 معد البرامج":
     else:
         st.error("تعذر العثور على ملف الإكسل الخاص بـ 'معد البرامج التدريبية' (training.xlsx).")
 
-# 3. عرض قسم "اعتماد TOT"
+# 3. عرض قسم "اعتماد TOT" (تم التحديث لدعم عمود التخصص وإحصائياته)
 elif selected_option == "📁 اعتماد TOT":
     st.markdown('<p class="program-header">📁 اعتماد TOT</p>', unsafe_allow_html=True)
     if df_tot is not None:
@@ -454,23 +454,28 @@ elif selected_option == "📁 اعتماد TOT":
         
         spec_col = None
         for col in df_tot.columns:
-            if "تخصص الاعتماد" in str(col).strip():
+            col_s = str(col).strip()
+            # البحث عن عمود 'التخصص' أو 'تخصص الاعتماد' بمرونة تامة
+            if "التخصص" in col_s or "تخصص الاعتماد" in col_s:
                 spec_col = col
                 break
         
-        if spec_col is not None:
-            spec_counts = df_tot[spec_col].astype(str).str.strip().value_counts()
-            
-            st.markdown(f"""
-                <div class="cpd-total-box">
-                    <div class="cpd-total-title">🌟 إحصائيات برنامج اعتماد TOT</div>
-                    <div class="cpd-stats">
-                        <div class="stat-item" style="color: #38bdf8; font-size: 14px;">إجمالي المتقدمين<span>{tot_total}</span></div>
-                        <div class="stat-item" style="color: #4ade80; font-size: 14px;">عدد التخصصات<span>{len(spec_counts)}</span></div>
-                    </div>
+        spec_counts = df_tot[spec_col].astype(str).str.strip().value_counts() if spec_col is not None else pd.Series(dtype=int)
+        
+        stats_html = f'<div class="stat-item" style="color: #38bdf8; font-size: 14px;">إجمالي المتقدمين<span>{tot_total}</span></div>'
+        if not spec_counts.empty:
+            stats_html += f'<div class="stat-item" style="color: #4ade80; font-size: 14px;">عدد التخصصات<span>{len(spec_counts)}</span></div>'
+
+        st.markdown(f"""
+            <div class="cpd-total-box">
+                <div class="cpd-total-title">🌟 إحصائيات برنامج اعتماد TOT</div>
+                <div class="cpd-stats">
+                    {stats_html}
                 </div>
-            """, unsafe_allow_html=True)
-            
+            </div>
+        """, unsafe_allow_html=True)
+        
+        if not spec_counts.empty:
             st.markdown("### 📋 تفصيل أعداد المعلمين بكل تخصص:")
             spec_cols = st.columns(3)
             idx = 0
@@ -483,11 +488,10 @@ elif selected_option == "📁 اعتماد TOT":
                         </div>
                     """, unsafe_allow_html=True)
                 idx += 1
+            st.markdown("<br>", unsafe_allow_html=True)
         else:
-            st.warning("⚠️ لم يتم العثور على عمود 'تخصص الاعتماد' في ملف Accrediation.xlsx.")
-            st.metric(label="إجمالي المتقدمين", value=tot_total)
+            st.warning("⚠️ لم يتم العثور على عمود 'التخصص' أو 'تخصص الاعتماد' في ملف Accrediation.xlsx.")
         
-        st.markdown("<br>", unsafe_allow_html=True)
         search_query = st.text_input("🔍 بحث مخصص داخل كشف اعتماد TOT:")
         display_df = df_tot
         if search_query:
