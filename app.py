@@ -159,6 +159,7 @@ menu_options = [
     "🏠 الرئيسية والبحث الشامل",
     "📁 معد البرامج",
     "📁 اعتماد TOT",
+    "📁 اعتماد مدربين 2023",
     "📁 المسمى الوظيفي",
     "📁 التسكين علي الكادر 2024",
     "📁 التسكين علي الكادر 2025",
@@ -195,6 +196,7 @@ def load_excel_file(filename):
 # تحميل الملفات
 df_training = load_excel_file("training.xlsx")
 df_tot = load_excel_file("Accrediation.xlsx")
+df_trainers_2023 = load_excel_file("Accrediation 2023.xlsx")
 df_job = load_excel_file("job.xlsx")
 df_cader = load_excel_file("cader.xlsx")
 df_cader2025 = load_excel_file("cader2025.xlsx")
@@ -206,6 +208,7 @@ df_cpd = load_excel_file("CPD To 12-5-2026.xlsx")
 # حساب أعداد السجلات الأساسية
 c_training = len(df_training) if df_training is not None else 0
 c_tot = len(df_tot) if df_tot is not None else 0
+c_trainers_2023 = len(df_trainers_2023) if df_trainers_2023 is not None else 0
 c_job = len(df_job) if df_job is not None else 0
 c_cader = len(df_cader) if df_cader is not None else 0
 c_cader2025 = len(df_cader2025) if df_cader2025 is not None else 0
@@ -277,7 +280,6 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword=
             admin_cols = st.columns(3)
             idx = 0
             for admin_name, admin_count in admin_counts.items():
-                # تنظيف اسم الإدارة وتجنب تكرار كلمة "إدارة" إذا كانت موجودة مسبقاً في اسم الإدارة داخل الملف
                 clean_admin_name = str(admin_name).strip()
                 if clean_admin_name.startswith("إدارة ") or clean_admin_name.startswith("الادارة "):
                     display_title = clean_admin_name
@@ -372,6 +374,7 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
 
         check_and_display(df_training, "معد البرامج التدريبية")
         check_and_display(df_tot, "اعتماد TOT")
+        check_and_display(df_trainers_2023, "اعتماد مدربين 2023")
         check_and_display(df_job, "المسمى الوظيفي")
         check_and_display(df_cader, "التسكين علي الكادر 2024")
         check_and_display(df_cader2025, "التسكين علي الكادر 2025")
@@ -388,7 +391,7 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
     with col1:
         st.markdown(f'<div class="metric-card-1"><div class="card-title">معد البرامج التدريبية</div><div class="card-number">{c_training}</div></div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-card-7"><div class="card-title">اعتماد TOT</div><div class="card-number">{c_tot}</div></div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="metric-card-8"><div class="card-title">منصة الوزارة CPD</div><div class="card-number">{c_cpd}</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="metric-card-4"><div class="card-title">اعتماد مدربين 2023</div><div class="card-number">{c_trainers_2023}</div></div>', unsafe_allow_html=True)
     with col2:
         st.markdown(f'<div class="metric-card-2"><div class="card-title">المسمى الوظيفي</div><div class="card-number">{c_job}</div></div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-card-5"><div class="card-title">معلم مساعد (الدفعة الأولى)</div><div class="card-number">{c_batch1}</div></div>', unsafe_allow_html=True)
@@ -401,8 +404,8 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
     st.markdown("<br>", unsafe_allow_html=True)
 
     chart_data = pd.DataFrame({
-        "البرنامج": ["معد البرامج", "اعتماد TOT", "المسمى الوظيفي", "التسكين 2024", "التسكين 2025", "قرار 160", "معلم مساعد 1", "معلم مساعد 2", "منصة الوزارة CPD"],
-        "عدد السجلات": [c_training, c_tot, c_job, c_cader, c_cader2025, c_reassign, c_batch1, c_batch2, c_cpd]
+        "البرنامج": ["معد البرامج", "اعتماد TOT", "اعتماد مدربين 23", "المسمى الوظيفي", "التسكين 2024", "التسكين 2025", "قرار 160", "معلم مساعد 1", "معلم مساعد 2", "منصة CPD"],
+        "عدد السجلات": [c_training, c_tot, c_trainers_2023, c_job, c_cader, c_cader2025, c_reassign, c_batch1, c_batch2, c_cpd]
     })
 
     st.markdown("### 📊 مقارنة أعداد السجلات (الأعمدة البيانية)")
@@ -472,10 +475,8 @@ elif selected_option == "📁 اعتماد TOT":
         
         if cat_col is not None:
             cat_series = df_tot[cat_col].astype(str).str.strip()
-            
             count_reviewer_only = len(df_tot[cat_series.str.fullmatch("مراجع", case=False, na=False) | cat_series.str.contains("^مراجع$", regex=True, na=False)])
             count_trainer_reviewer = len(df_tot[cat_series.str.contains("مدرب.*مراجع|مراجع.*مدرب|مدرب - مراجع|مدرب/مراجع", case=False, na=False)])
-            
             cat_counts = cat_series.value_counts()
             
             st.markdown(f"""
@@ -519,7 +520,12 @@ elif selected_option == "📁 اعتماد TOT":
     else:
         st.error("تعذر العثور على ملف الإكسل الخاص بـ 'اعتماد TOT' (Accrediation.xlsx).")
 
-# 4. عرض قسم "المسمى الوظيفي"
+# 4. عرض قسم "اعتماد مدربين 2023"
+elif selected_option == "📁 اعتماد مدربين 2023":
+    st.markdown('<p class="program-header">📁 اعتماد مدربين 2023</p>', unsafe_allow_html=True)
+    display_batch_stats_and_table(df_trainers_2023, "اعتماد مدربين 2023", has_specs=True, spec_keyword="التخصص")
+
+# 5. عرض قسم "المسمى الوظيفي"
 elif selected_option == "📁 المسمى الوظيفي":
     st.markdown('<p class="program-header">📁 المسمى الوظيفي</p>', unsafe_allow_html=True)
     if df_job is not None:
@@ -573,12 +579,12 @@ elif selected_option == "📁 المسمى الوظيفي":
     else:
         st.error("ملف المسمى الوظيفي (job.xlsx) غير متوفر.")
 
-# 5. عرض قسم "التسكين علي الكادر 2024"
+# 6. عرض قسم "التسكين علي الكادر 2024"
 elif selected_option == "📁 التسكين علي الكادر 2024":
     st.markdown('<p class="program-header">📁 التسكين علي الكادر 2024</p>', unsafe_allow_html=True)
     display_batch_stats_and_table(df_cader, "التسكين علي الكادر 2024", has_specs=True, spec_keyword="التخصص علي الكادر")
 
-# 6. عرض قسم "التسكين علي الكادر 2025"
+# 7. عرض قسم "التسكين علي الكادر 2025"
 elif selected_option == "📁 التسكين علي الكادر 2025":
     st.markdown('<p class="program-header">📁 التسكين علي الكادر 2025</p>', unsafe_allow_html=True)
     display_batch_stats_and_table(df_cader2025, "التسكين علي الكادر 2025", has_specs=True, spec_keyword="التخصص علي الكادر")
