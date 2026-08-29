@@ -90,6 +90,7 @@ st.markdown("""
     .metric-card-7 { background: linear-gradient(135deg, #3a7bd5 0%, #3a6073 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
     .metric-card-8 { background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
     .metric-card-9 { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
+    .metric-card-10 { background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
     
     .cpd-card-box { background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 10px; color: white; margin-bottom: 10px; box-shadow: 0 3px 5px rgba(0,0,0,0.15); }
     .cpd-total-box { background: linear-gradient(135deg, #0f172a 100%, #1e3a8a 0%); border: 1.5px solid #3b82f6; padding: 12px; border-radius: 10px; color: white; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
@@ -159,7 +160,8 @@ menu_options = [
     "📁 معد البرامج",
     "📁 اعتماد TOT",
     "📁 المسمى الوظيفي",
-    "📁التسكين علي الكادر 2024",
+    "📁 التسكين علي الكادر",
+    "📁 التسكين علي الكادر 2025",
     "📁 قرار 160",
     "📁 ملفات معلم مساعد الدفعة 1",
     "📁 ملفات معلم مساعد الدفعة 2",
@@ -195,6 +197,7 @@ df_training = load_excel_file("training.xlsx")
 df_tot = load_excel_file("Accrediation.xlsx")
 df_job = load_excel_file("job.xlsx")
 df_cader = load_excel_file("cader.xlsx")
+df_cader2025 = load_excel_file("cader2025.xlsx")
 df_reassign = load_excel_file("160.xlsx")
 df_batch1 = load_excel_file("batch1.xlsx")
 df_batch2 = load_excel_file("batch2.xlsx")
@@ -205,6 +208,7 @@ c_training = len(df_training) if df_training is not None else 0
 c_tot = len(df_tot) if df_tot is not None else 0
 c_job = len(df_job) if df_job is not None else 0
 c_cader = len(df_cader) if df_cader is not None else 0
+c_cader2025 = len(df_cader2025) if df_cader2025 is not None else 0
 c_reassign = len(df_reassign) if df_reassign is not None else 0
 c_batch1 = len(df_batch1) if df_batch1 is not None else 0
 c_batch2 = len(df_batch2) if df_batch2 is not None else 0
@@ -362,7 +366,8 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
         check_and_display(df_training, "معد البرامج التدريبية")
         check_and_display(df_tot, "اعتماد TOT")
         check_and_display(df_job, "المسمى الوظيفي")
-        check_and_display(df_cader, "التسكين علي الكادر 2024")
+        check_and_display(df_cader, "التسكين علي الكادر")
+        check_and_display(df_cader2025, "التسكين علي الكادر 2025")
         check_and_display(df_reassign, "إعادة التعيين (قرار 160)")
         check_and_display(df_batch1, "معلم مساعد الدفعة الأولى")
         check_and_display(df_batch2, "معلم مساعد الدفعة الثانية")
@@ -380,16 +385,17 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
     with col2:
         st.markdown(f'<div class="metric-card-2"><div class="card-title">المسمى الوظيفي</div><div class="card-number">{c_job}</div></div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-card-5"><div class="card-title">معلم مساعد (الدفعة الأولى)</div><div class="card-number">{c_batch1}</div></div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="metric-card-9"><div class="card-title">إعادة التعيين (قرار 160)</div><div class="card-number">{c_reassign}</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="metric-card-10"><div class="card-title">التسكين علي الكادر 2025</div><div class="card-number">{c_cader2025}</div></div>', unsafe_allow_html=True)
     with col3:
         st.markdown(f'<div class="metric-card-3"><div class="card-title">التسكين علي الكادر</div><div class="card-number">{c_cader}</div></div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-card-6"><div class="card-title">معلم مساعد (الدفعة الثانية)</div><div class="card-number">{c_batch2}</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="metric-card-9"><div class="card-title">إعادة التعيين (قرار 160)</div><div class="card-number">{c_reassign}</div></div>', unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
     chart_data = pd.DataFrame({
-        "البرنامج": ["معد البرامج", "اعتماد TOT", "المسمى الوظيفي", "التسكين", "قرار 160", "معلم مساعد 1", "معلم مساعد 2", "منصة الوزارة CPD"],
-        "عدد السجلات": [c_training, c_tot, c_job, c_cader, c_reassign, c_batch1, c_batch2, c_cpd]
+        "البرنامج": ["معد البرامج", "اعتماد TOT", "المسمى الوظيفي", "التسكين", "التسكين 2025", "قرار 160", "معلم مساعد 1", "معلم مساعد 2", "منصة الوزارة CPD"],
+        "عدد السجلات": [c_training, c_tot, c_job, c_cader, c_cader2025, c_reassign, c_batch1, c_batch2, c_cpd]
     })
 
     st.markdown("### 📊 مقارنة أعداد السجلات (الأعمدة البيانية)")
@@ -444,7 +450,7 @@ elif selected_option == "📁 معد البرامج":
     else:
         st.error("تعذر العثور على ملف الإكسل الخاص بـ 'معد البرامج التدريبية' (training.xlsx).")
 
-# 3. عرض قسم "اعتماد TOT" (بدون البطاقات المستقلة)
+# 3. عرض قسم "اعتماد TOT"
 elif selected_option == "📁 اعتماد TOT":
     st.markdown('<p class="program-header">📁 اعتماد TOT</p>', unsafe_allow_html=True)
     if df_tot is not None:
@@ -560,10 +566,15 @@ elif selected_option == "📁 المسمى الوظيفي":
     else:
         st.error("ملف المسمى الوظيفي (job.xlsx) غير متوفر.")
 
-# بقية الأقسام الأخرى
+# 5. عرض قسم "التسكين علي الكادر"
 elif selected_option == "📁 التسكين علي الكادر":
     st.markdown('<p class="program-header">📁 التسكين علي الكادر</p>', unsafe_allow_html=True)
     display_batch_stats_and_table(df_cader, "التسكين علي الكادر", has_specs=True, spec_keyword="التخصص علي الكادر")
+
+# 6. عرض قسم "التسكين علي الكادر 2025" (القسم الجديد المضاف)
+elif selected_option == "📁 التسكين علي الكادر 2025":
+    st.markdown('<p class="program-header">📁 التسكين علي الكادر 2025</p>', unsafe_allow_html=True)
+    display_batch_stats_and_table(df_cader2025, "التسكين علي الكادر 2025", has_specs=True, spec_keyword="التخصص علي الكادر")
 
 elif selected_option == "📁 قرار 160":
     st.markdown('<p class="program-header">📁 إعادة التعيين (قرار 160)</p>', unsafe_allow_html=True)
