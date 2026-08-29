@@ -362,7 +362,7 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
         check_and_display(df_training, "معد البرامج التدريبية")
         check_and_display(df_tot, "اعتماد TOT")
         check_and_display(df_job, "المسمى الوظيفي")
-        check_and_display(df_cader, "التسكين علي الكادر")
+        check_and_display(df_cader, "التسكين علي الكادر 2024")
         check_and_display(df_reassign, "إعادة التعيين (قرار 160)")
         check_and_display(df_batch1, "معلم مساعد الدفعة الأولى")
         check_and_display(df_batch2, "معلم مساعد الدفعة الثانية")
