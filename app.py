@@ -160,7 +160,7 @@ menu_options = [
     "📁 معد البرامج",
     "📁 اعتماد TOT",
     "📁 المسمى الوظيفي",
-    "📁التسكين علي الكادر 2024",
+    "📁 التسكين علي الكادر 2024",
     "📁 التسكين علي الكادر 2025",
     "📁 قرار 160",
     "📁 ملفات معلم مساعد الدفعة 1",
@@ -366,7 +366,7 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
         check_and_display(df_training, "معد البرامج التدريبية")
         check_and_display(df_tot, "اعتماد TOT")
         check_and_display(df_job, "المسمى الوظيفي")
-        check_and_display(df_cader, "التسكين علي الكادر")
+        check_and_display(df_cader, "التسكين علي الكادر 2024")
         check_and_display(df_cader2025, "التسكين علي الكادر 2025")
         check_and_display(df_reassign, "إعادة التعيين (قرار 160)")
         check_and_display(df_batch1, "معلم مساعد الدفعة الأولى")
@@ -387,14 +387,14 @@ if selected_option == "🏠 الرئيسية والبحث الشامل":
         st.markdown(f'<div class="metric-card-5"><div class="card-title">معلم مساعد (الدفعة الأولى)</div><div class="card-number">{c_batch1}</div></div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-card-10"><div class="card-title">التسكين علي الكادر 2025</div><div class="card-number">{c_cader2025}</div></div>', unsafe_allow_html=True)
     with col3:
-        st.markdown(f'<div class="metric-card-3"><div class="card-title">التسكين علي الكادر</div><div class="card-number">{c_cader}</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="metric-card-3"><div class="card-title">التسكين علي الكادر 2024</div><div class="card-number">{c_cader}</div></div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-card-6"><div class="card-title">معلم مساعد (الدفعة الثانية)</div><div class="card-number">{c_batch2}</div></div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-card-9"><div class="card-title">إعادة التعيين (قرار 160)</div><div class="card-number">{c_reassign}</div></div>', unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
     chart_data = pd.DataFrame({
-        "البرنامج": ["معد البرامج", "اعتماد TOT", "المسمى الوظيفي", "التسكين", "التسكين 2025", "قرار 160", "معلم مساعد 1", "معلم مساعد 2", "منصة الوزارة CPD"],
+        "البرنامج": ["معد البرامج", "اعتماد TOT", "المسمى الوظيفي", "التسكين 2024", "التسكين 2025", "قرار 160", "معلم مساعد 1", "معلم مساعد 2", "منصة الوزارة CPD"],
         "عدد السجلات": [c_training, c_tot, c_job, c_cader, c_cader2025, c_reassign, c_batch1, c_batch2, c_cpd]
     })
 
@@ -566,12 +566,12 @@ elif selected_option == "📁 المسمى الوظيفي":
     else:
         st.error("ملف المسمى الوظيفي (job.xlsx) غير متوفر.")
 
-# 5. عرض قسم "التسكين علي الكادر"
-elif selected_option == "📁 التسكين علي الكادر":
-    st.markdown('<p class="program-header">📁 التسكين علي الكادر</p>', unsafe_allow_html=True)
-    display_batch_stats_and_table(df_cader, "التسكين علي الكادر", has_specs=True, spec_keyword="التخصص علي الكادر")
+# 5. عرض قسم "التسكين علي الكادر 2024"
+elif selected_option == "📁 التسكين علي الكادر 2024":
+    st.markdown('<p class="program-header">📁 التسكين علي الكادر 2024</p>', unsafe_allow_html=True)
+    display_batch_stats_and_table(df_cader, "التسكين علي الكادر 2024", has_specs=True, spec_keyword="التخصص علي الكادر")
 
-# 6. عرض قسم "التسكين علي الكادر 2025" (القسم الجديد المضاف)
+# 6. عرض قسم "التسكين علي الكادر 2025"
 elif selected_option == "📁 التسكين علي الكادر 2025":
     st.markdown('<p class="program-header">📁 التسكين علي الكادر 2025</p>', unsafe_allow_html=True)
     display_batch_stats_and_table(df_cader2025, "التسكين علي الكادر 2025", has_specs=True, spec_keyword="التخصص علي الكادر")
