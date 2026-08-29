@@ -92,7 +92,6 @@ st.markdown("""
     .metric-card-9 { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 10px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); margin-bottom: 8px; }
     
     .cpd-card-box { background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 10px; color: white; margin-bottom: 10px; box-shadow: 0 3px 5px rgba(0,0,0,0.15); }
-    .cpd-special-card { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); border: 1px solid #60a5fa; padding: 12px; border-radius: 10px; color: white; margin-bottom: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
     .cpd-total-box { background: linear-gradient(135deg, #0f172a 100%, #1e3a8a 0%); border: 1.5px solid #3b82f6; padding: 12px; border-radius: 10px; color: white; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
     .cpd-title { font-size: 13px; font-weight: bold; color: #38bdf8; margin-bottom: 6px; border-bottom: 1px solid #475569; padding-bottom: 4px; }
     .cpd-total-title { font-size: 14px; font-weight: bold; color: #facc15; margin-bottom: 8px; border-bottom: 1px solid #3b82f6; padding-bottom: 4px; text-align: center; }
@@ -445,7 +444,7 @@ elif selected_option == "📁 معد البرامج":
     else:
         st.error("تعذر العثور على ملف الإكسل الخاص بـ 'معد البرامج التدريبية' (training.xlsx).")
 
-# 3. عرض قسم "اعتماد TOT" (مع دعم عمود "فئة الاعتماد" وبطاقات مستقلة)
+# 3. عرض قسم "اعتماد TOT" (بدون البطاقات المستقلة)
 elif selected_option == "📁 اعتماد TOT":
     st.markdown('<p class="program-header">📁 اعتماد TOT</p>', unsafe_allow_html=True)
     if df_tot is not None:
@@ -461,7 +460,6 @@ elif selected_option == "📁 اعتماد TOT":
         if cat_col is not None:
             cat_series = df_tot[cat_col].astype(str).str.strip()
             
-            # حساب الأعداد بشكل دقيق ومستقل للفئات المطلوبة
             count_reviewer_only = len(df_tot[cat_series.str.fullmatch("مراجع", case=False, na=False) | cat_series.str.contains("^مراجع$", regex=True, na=False)])
             count_trainer_reviewer = len(df_tot[cat_series.str.contains("مدرب.*مراجع|مراجع.*مدرب|مدرب - مراجع|مدرب/مراجع", case=False, na=False)])
             
@@ -478,25 +476,6 @@ elif selected_option == "📁 اعتماد TOT":
                 </div>
             """, unsafe_allow_html=True)
             
-            # عرض بطاقات مستقلة وبارزة لفئات فئة الاعتماد في المقدمة
-            st.markdown("### 📌 البطاقات الإحصائية المستقلة لفئات الاعتماد:")
-            card_col1, card_col2 = st.columns(2)
-            with card_col1:
-                st.markdown(f"""
-                    <div class="cpd-special-card">
-                        <div class="cpd-title" style="color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.3);">📋 فئة (مراجع)</div>
-                        <div style="text-align: center; font-size: 20px; font-weight: bold; color: #ffffff; margin-top: 5px;">{count_reviewer_only} معلم</div>
-                    </div>
-                """, unsafe_allow_html=True)
-            with card_col2:
-                st.markdown(f"""
-                    <div class="cpd-special-card" style="background: linear-gradient(135deg, #78350f 0%, #d97706 100%); border: 1px solid #f59e0b;">
-                        <div class="cpd-title" style="color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.3);">🤝 فئة (مدرب - مراجع)</div>
-                        <div style="text-align: center; font-size: 20px; font-weight: bold; color: #ffffff; margin-top: 5px;">{count_trainer_reviewer} معلم</div>
-                    </div>
-                """, unsafe_allow_html=True)
-            
-            st.markdown("<br>", unsafe_allow_html=True)
             st.markdown("### 📋 تفصيل إحصائيات فئات الاعتماد بالكامل:")
             spec_cols = st.columns(3)
             idx = 0
