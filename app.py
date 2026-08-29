@@ -445,28 +445,27 @@ elif selected_option == "📁 معد البرامج":
     else:
         st.error("تعذر العثور على ملف الإكسل الخاص بـ 'معد البرامج التدريبية' (training.xlsx).")
 
-# 3. عرض قسم "اعتماد TOT" (مع بطاقات مستقلة لفئات مراجع ومدرب-مراجع)
+# 3. عرض قسم "اعتماد TOT" (مع دعم عمود "فئة الاعتماد" وبطاقات مستقلة)
 elif selected_option == "📁 اعتماد TOT":
     st.markdown('<p class="program-header">📁 اعتماد TOT</p>', unsafe_allow_html=True)
     if df_tot is not None:
         tot_total = len(df_tot)
         
-        spec_col = None
+        cat_col = None
         for col in df_tot.columns:
             col_s = str(col).strip()
-            if "التخصص" in col_s or "تخصص الاعتماد" in col_s:
-                spec_col = col
+            if "فئة الاعتماد" in col_s or "فئة" in col_s:
+                cat_col = col
                 break
         
-        if spec_col is not None:
-            spec_series = df_tot[spec_col].astype(str).str.strip()
+        if cat_col is not None:
+            cat_series = df_tot[cat_col].astype(str).str.strip()
             
             # حساب الأعداد بشكل دقيق ومستقل للفئات المطلوبة
-            count_reviewer_only = len(df_tot[spec_series.str.fullmatch("مراجع", case=False, na=False) | spec_series.str.contains("^مراجع$", regex=True, na=False)])
-            count_trainer_reviewer = len(df_tot[spec_series.str.contains("مدرب.*مراجع|مراجع.*مدرب|مدرب - مراجع|مدرب/مراجع", case=False, na=False)])
+            count_reviewer_only = len(df_tot[cat_series.str.fullmatch("مراجع", case=False, na=False) | cat_series.str.contains("^مراجع$", regex=True, na=False)])
+            count_trainer_reviewer = len(df_tot[cat_series.str.contains("مدرب.*مراجع|مراجع.*مدرب|مدرب - مراجع|مدرب/مراجع", case=False, na=False)])
             
-            # بقية التخصصات الأخرى
-            spec_counts = spec_series.value_counts()
+            cat_counts = cat_series.value_counts()
             
             st.markdown(f"""
                 <div class="cpd-total-box">
@@ -479,13 +478,13 @@ elif selected_option == "📁 اعتماد TOT":
                 </div>
             """, unsafe_allow_html=True)
             
-            # عرض بطاقات مستقلة وبارزة لـ مراجع ومدرب-مراجع في المقدمة
-            st.markdown("### 📌 البطاقات الإحصائية المستقلة للفئات الرئيسية:")
+            # عرض بطاقات مستقلة وبارزة لفئات فئة الاعتماد في المقدمة
+            st.markdown("### 📌 البطاقات الإحصائية المستقلة لفئات الاعتماد:")
             card_col1, card_col2 = st.columns(2)
             with card_col1:
                 st.markdown(f"""
                     <div class="cpd-special-card">
-                        <div class="cpd-title" style="color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.3);">📋 فئة (مراجع فقط)</div>
+                        <div class="cpd-title" style="color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.3);">📋 فئة (مراجع)</div>
                         <div style="text-align: center; font-size: 20px; font-weight: bold; color: #ffffff; margin-top: 5px;">{count_reviewer_only} معلم</div>
                     </div>
                 """, unsafe_allow_html=True)
@@ -498,21 +497,21 @@ elif selected_option == "📁 اعتماد TOT":
                 """, unsafe_allow_html=True)
             
             st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown("### 📋 تفصيل أعداد المعلمين بكل التخصصات:")
+            st.markdown("### 📋 تفصيل إحصائيات فئات الاعتماد بالكامل:")
             spec_cols = st.columns(3)
             idx = 0
-            for spec_name, spec_count in spec_counts.items():
+            for cat_name, cat_count in cat_counts.items():
                 with spec_cols[idx % 3]:
                     st.markdown(f"""
                         <div class="cpd-card-box">
-                            <div class="cpd-title">{spec_name}</div>
-                            <div style="text-align: center; font-size: 16px; font-weight: bold; color: #4ade80; margin-top: 3px;">{spec_count}</div>
+                            <div class="cpd-title">{cat_name}</div>
+                            <div style="text-align: center; font-size: 16px; font-weight: bold; color: #4ade80; margin-top: 3px;">{cat_count}</div>
                         </div>
                     """, unsafe_allow_html=True)
                 idx += 1
             st.markdown("<br>", unsafe_allow_html=True)
         else:
-            st.warning("⚠️ لم يتم العثور على عمود 'التخصص' أو 'تخصص الاعتماد' في ملف Accrediation.xlsx.")
+            st.warning("⚠️ لم يتم العثور على عمود 'فئة الاعتماد' في ملف Accrediation.xlsx.")
             st.metric(label="إجمالي المتقدمين", value=tot_total)
         
         search_query = st.text_input("🔍 بحث مخصص داخل كشف اعتماد TOT:")
