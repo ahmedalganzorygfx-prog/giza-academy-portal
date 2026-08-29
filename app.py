@@ -25,7 +25,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تخصيص واجهة المستخدم
+# تخصيص واجهة المستخدم ومعالجة مشكلة ظهور الحروف عند غلق الشريط الجانبي
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -38,9 +38,15 @@ st.markdown("""
         font-size: 16px !important;
     }
     
+    /* إصلاح مشكلة ظهور الحروف والأيقونات عند تصغير أو غلق الشريط الجانبي */
     [data-testid="stSidebar"][aria-expanded="false"] {
         width: 0px !important;
         min-width: 0px !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+    [data-testid="stSidebar"][aria-expanded="false"] * {
+        display: none !important;
     }
 
     .app-header-box {
@@ -863,9 +869,9 @@ elif selected_option == "📁 منصة الوزارة CPD":
         
         csv_data = ddf.to_csv(index=False).encode('utf-8-sig')
         if is_authorized:
-            st.download_button("📥 تصدير النتائج الحالية لملف CSV", data=csv_data, file_name="cpd_export.csv", mime="text/csv")
+            st.download_button("📥 تصدير النتائج الحالية لملف CSV", data=csv_data, file_name="cpd_export.csv",: mime="text/csv")
         else:
-            st.info("🔒 أدخل كلمة المرور في الشريط الجانبي لتحميل ملف الـ CSV.")
+            st.info("🔒 أدخل كلمة المرور في الشريط الجانبي لتفعيل ملف الـ CSV.")
 
         st.dataframe(ddf, use_container_width=True)
     else:
