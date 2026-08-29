@@ -214,7 +214,7 @@ c_batch1 = len(df_batch1) if df_batch1 is not None else 0
 c_batch2 = len(df_batch2) if df_batch2 is not None else 0
 c_cpd = len(df_cpd) if df_cpd is not None else 0
 
-# دالة عرض الجدول والبيانات مع زر التصدير (Export)
+# دالة عرض الجدول والبيانات مع زر التصدير (Export) ومعالجة أسماء الإدارات لتجنب التكرار
 def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword="التخصص علي الكادر"):
     if df is not None:
         total_records = len(df)
@@ -277,10 +277,17 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword=
             admin_cols = st.columns(3)
             idx = 0
             for admin_name, admin_count in admin_counts.items():
+                # تنظيف اسم الإدارة وتجنب تكرار كلمة "إدارة" إذا كانت موجودة مسبقاً في اسم الإدارة داخل الملف
+                clean_admin_name = str(admin_name).strip()
+                if clean_admin_name.startswith("إدارة ") or clean_admin_name.startswith("الادارة "):
+                    display_title = clean_admin_name
+                else:
+                    display_title = f"إدارة {clean_admin_name}"
+                    
                 with admin_cols[idx % 3]:
                     st.markdown(f"""
                         <div class="cpd-card-box">
-                            <div class="cpd-title" style="color: #facc15;">إدارة {admin_name}</div>
+                            <div class="cpd-title" style="color: #facc15;">{display_title}</div>
                             <div style="text-align: center; font-size: 16px; font-weight: bold; color: #38bdf8; margin-top: 3px;">{admin_count}</div>
                         </div>
                     """, unsafe_allow_html=True)
