@@ -1,73 +1,26 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import io
 
-# إعداد الصفحة لتكون بعرض عريض لتناسب الجداول
-st.set_page_config(page_title="لوحة البيانات المحمية", layout="wide")
+# إعداد الصفحة لتكون بعرض عريض
+st.set_page_config(page_title="لوحة البيانات المحمية بكلمة مرور", layout="wide")
 
-# ==================== 1. تنسيقات الـ CSS (إخفاء زر التحميل + العلامة المائية) ====================
+# ==================== 1. تنسيقات الـ CSS (إخفاء زر التحميل الافتراضي فقط) ====================
 st.markdown("""
     <style>
-    /* إخفاء شريط الأدوات وزر التحميل العائم فوق الجداول والرسومات البيانية */
+    /* إخفاء شريط الأدوات وزر التحميل الافتراضي العائم فوق الجداول والرسومات البيانية */
     [data-testid="stElementToolbar"],
     [data-testid="baseButton-header"],
     button[title*="Download"] {
         display: none !important;
     }
-
-    /* تصميم العلامة المائية الخلفية */
-    .watermark-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-around;
-        align-content: space-around;
-        z-index: 999999;
-        pointer-events: none; /* يسمح بالتفاعل مع الصفحة والنقر بشكل طبيعي تماماً */
-        overflow: hidden;
-    }
-
-    .watermark-text {
-        color: rgba(150, 150, 150, 0.15); /* لون رمادي خفيف جداً لا يعيق القراءة */
-        font-size: 22px;
-        font-weight: bold;
-        transform: rotate(-30deg); /* ميلان النص لتعشيق الشاشة */
-        user-select: none;
-        white-space: nowrap;
-        padding: 40px;
-    }
     </style>
 """, unsafe_allow_html=True)
 
-# ==================== 2. إعداد بيانات العلامة المائية الديناميكية ====================
-# (يمكن ربطها لاحقاً بنظام تسجيل الدخول أو الـ Session State الخاص بك)
-user_name = "أحمد الجنزوري"
-user_code = "PAT-GIZ-01"
-current_time = datetime.now().strftime("%Y-%m-%d %H:%M")
-watermark_content = f"{user_name} - {user_code} - {current_time}"
-
-# حقن العلامة المائية في الصفحة عبر كود HTML متكرر لتغطية الشاشة بالكامل
-watermark_html = f"""
-<div class="watermark-container">
-    <div class="watermark-text">{watermark_content}</div>
-    <div class="watermark-text">{watermark_content}</div>
-    <div class="watermark-text">{watermark_content}</div>
-    <div class="watermark-text">{watermark_content}</div>
-    <div class="watermark-text">{watermark_content}</div>
-    <div class="watermark-text">{watermark_content}</div>
-    <div class="watermark-text">{watermark_content}</div>
-    <div class="watermark-text">{watermark_content}</div>
-</div>
-"""
-st.markdown(watermark_html, unsafe_allow_html=True)
-
-# ==================== 3. محتوى التطبيق والجداول الخاصة بك ====================
-st.title("🛡️ لوحة البيانات الحساسة والمحمية")
-st.write("هذه الصفحة مؤمنة بحيث تم إخفاء أزرار التحميل والتنزيل العائمة، مع وجود علامة مائية سرية باسم المستخدم ووقت الزيارة.")
+# ==================== 2. محتوى التطبيق والجداول الخاصة بك ====================
+st.title("🛡️ لوحة البيانات المحمية بكلمة مرور للتحميل")
+st.write("تم إخفاء أزرار التنزيل الافتراضية، وإلغاء العلامة المائية. ولتحميل البيانات، يرجى استخدام زر التحميل الآمن أدناه وإدخال كلمة المرور.")
 
 # مثال على جدول بيانات حساس
 data = {
@@ -81,5 +34,44 @@ data = {
 df = pd.DataFrame(data)
 
 st.subheader("بيانات الموظفين السرية")
-# عرض الجدول (بدون زر التنزيل الذي تم إخفاؤه بالـ CSS)
+# عرض الجدول (بدون زر التنزيل الافتراضي)
 st.dataframe(df, use_container_width=True)
+
+# ==================== 3. نظام التحميل الآمن بكلمة مرور ====================
+st.markdown("---")
+st.subheader("📥 منطقة التنزيل الآمن للبيانات")
+
+# استخدام Session State لحفظ حالة نافذة إدخال كلمة المرور لكل جلسة
+if "show_password_input" not in st.session_state:
+    st.session_state.show_password_input = False
+
+# زر يضغط عليه المستخدم لبدء عملية التنزيل
+if st.button("تنزيل ملف البيانات (Excel)"):
+    st.session_state.show_password_input = True
+
+# إذا قام المستخدم بالضغط على زر التنزيل، تظهر خانة إدخال كلمة المرور
+if st.session_state.show_password_input:
+    entered_password = st.text_input("الرجاء إدخال كلمة مرور المدير/المسؤول للسماح بالتحميل:", type="password")
+    
+    if entered_password:
+        # كلمة المرور المحددة (يمكنك تغييرها حسب رغبتك)
+        CORRECT_PASSWORD = "Admin123SecurePassword"
+        
+        if entered_password == CORRECT_PASSWORD:
+            st.success("كلمة المرور صحيحة! جاري تجهيز الملف للتحميل...")
+            
+            # تحويل جدول البيانات إلى ملف Excel في الذاكرة
+            output = io.BytesIO()
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                df.to_excel(writer, index=False, sheet_name='Sheet1')
+            processed_data = output.getvalue()
+            
+            # زر التحميل الفعلي يظهر فقط عند صحة كلمة المرور
+            st.download_button(
+                label="اضغط هنا لتأكيد تحميل الملف الآن",
+                data=processed_data,
+                file_name=f"Secure_Data_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+        else:
+            st.error("كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.")
