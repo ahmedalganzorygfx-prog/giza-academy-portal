@@ -11,6 +11,9 @@ st.set_page_config(
     layout="wide"
 )
 
+# كلمة المرور المطلوبة للتحميل (يمكنك تغييرها كما تشاء)
+PASSWORD_CORRECT = "1234"
+
 # تخصيص واجهة المستخدم وتعديل لون عناوين الأقسام لتكون واضحة
 st.markdown("""
     <style>
@@ -195,6 +198,26 @@ def load_excel_file(filename):
             return None
     return None
 
+# دالة عرض حماية كلمة المرور وزر التحميل
+def render_secure_download_button(df, file_label, file_name_csv):
+    if df is not None:
+        st.markdown("---")
+        with st.expander(f"📥 تحميل كشف {file_label} (مقيّد بكلمة مرور)"):
+            entered_pass = st.text_input(f"أدخل كلمة المرور لتحميل {file_label}:", type="password", key=f"pass_{file_name_csv}")
+            if entered_pass:
+                if entered_pass == PASSWORD_CORRECT:
+                    st.success("✅ كلمة المرور صحيحة. زر التحميل جاهز الآن:")
+                    csv_data = df.to_csv(index=True).encode('utf-8-sig')
+                    st.download_button(
+                        label=f"⬇️ اضغط هنا لتنزيل ملف {file_label} (CSV)",
+                        data=csv_data,
+                        file_name=file_name_csv,
+                        mime="text/csv",
+                        key=f"dl_btn_{file_name_csv}"
+                    )
+                else:
+                    st.error("❌ كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.")
+
 # تحميل الملفات
 df_training = load_excel_file("training.xlsx")
 df_tot = load_excel_file("Accrediation.xlsx")
@@ -221,8 +244,8 @@ c_batch1 = len(df_batch1) if df_batch1 is not None else 0
 c_batch2 = len(df_batch2) if df_batch2 is not None else 0
 c_cpd = len(df_cpd) if df_cpd is not None else 0
 
-# دالة عرض الجدول والبيانات مع زر التصدير (Export) ومعالجة أسماء الإدارات لتجنب التكرار
-def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword="التخصص علي الكادر"):
+# دالة عرض الجدول والبيانات مع زر التحميل المحمي
+def display_batch_stats_and_table(df, batch_title, filename_csv, has_specs=True, spec_keyword="التخصص علي الكادر"):
     if df is not None:
         total_records = len(df)
         spec_col = None
@@ -307,15 +330,10 @@ def display_batch_stats_and_table(df, batch_title, has_specs=True, spec_keyword=
             ddf = df[mask]
             st.info(f"عدد النتائج المطابقة للبحث: {len(ddf)}")
         
-        csv_data = ddf.to_csv(index=False).encode('utf-8-sig')
-        st.download_button(
-            label=f"📥 تصدير النتائج الحالية لملف CSV ({len(ddf)} سجل)",
-            data=csv_data,
-            file_name=f"{batch_title}_export.csv",
-            mime="text/csv",
-        )
-        
         st.dataframe(ddf, use_container_width=True)
+        
+        # إضافة زر التحميل المحمي بكلمة مرور
+        render_secure_download_button(df, batch_title, filename_csv)
     else:
         st.error(f"ملف بيانات {batch_title} غير متوفر. يمكنك رفعه من القائمة الجانبية.")
 
@@ -459,9 +477,8 @@ elif selected_option == "📁 معد البرامج":
             display_df = df_training[mask]
             st.info(f"عدد النتائج المطابقة للبحث: {len(display_df)}")
         
-        csv_data = display_df.to_csv(index=False).encode('utf-8-sig')
-        st.download_button("📥 تصدير النتائج الحالية لملف CSV", data=csv_data, file_name="training_export.csv", mime="text/csv")
         st.dataframe(display_df, use_container_width=True)
+        render_secure_download_button(df_training, "معد البرامج التدريبية", "training_data.csv")
     else:
         st.error("تعذر العثور على ملف الإكسل الخاص بـ 'معد البرامج التدريبية' (training.xlsx).")
 
@@ -519,16 +536,15 @@ elif selected_option == "📁 اعتماد TOT":
             display_df = df_tot[mask]
             st.info(f"عدد النتائج المطابقة للبحث: {len(display_df)}")
         
-        csv_data = display_df.to_csv(index=False).encode('utf-8-sig')
-        st.download_button("📥 تصدير النتائج الحالية لملف CSV", data=csv_data, file_name="tot_export.csv", mime="text/csv")
         st.dataframe(display_df, use_container_width=True)
+        render_secure_download_button(df_tot, "اعتماد TOT", "accrediation_tot.csv")
     else:
         st.error("تعذر العثور على ملف الإكسل الخاص بـ 'اعتماد TOT' (Accrediation.xlsx).")
 
 # 4. عرض قسم "اعتماد مدربين 2023"
 elif selected_option == "📁 اعتماد مدربين 2023":
     st.markdown('<p class="program-header">📁 اعتماد مدربين 2023</p>', unsafe_allow_html=True)
-    display_batch_stats_and_table(df_trainers_2023, "اعتماد مدربين 2023", has_specs=True, spec_keyword="التخصص")
+    display_batch_stats_and_table(df_trainers_2023, "اعتماد مدربين 2023", "trainers_2023.csv", has_specs=True, spec_keyword="التخصص")
 
 # 5. عرض قسم "المسمى الوظيفي"
 elif selected_option == "📁 المسمى الوظيفي":
@@ -578,38 +594,37 @@ elif selected_option == "📁 المسمى الوظيفي":
             ddf = df_job[mask]
             st.info(f"عدد النتائج المطابقة للبحث: {len(ddf)}")
         
-        csv_data = ddf.to_csv(index=False).encode('utf-8-sig')
-        st.download_button("📥 تصدير النتائج الحالية لملف CSV", data=csv_data, file_name="job_export.csv", mime="text/csv")
         st.dataframe(ddf, use_container_width=True)
+        render_secure_download_button(df_job, "المسمى الوظيفي", "job_title.csv")
     else:
         st.error("ملف المسمى الوظيفي (job.xlsx) غير متوفر.")
 
 # 6. عرض قسم "التسكين علي الكادر 2024"
 elif selected_option == "📁 التسكين علي الكادر 2024":
     st.markdown('<p class="program-header">📁 التسكين علي الكادر 2024</p>', unsafe_allow_html=True)
-    display_batch_stats_and_table(df_cader, "التسكين علي الكادر 2024", has_specs=True, spec_keyword="التخصص علي الكادر")
+    display_batch_stats_and_table(df_cader, "التسكين علي الكادر 2024", "cader_2024.csv", has_specs=True, spec_keyword="التخصص علي الكادر")
 
 # 7. عرض قسم "التسكين علي الكادر 2025"
 elif selected_option == "📁 التسكين علي الكادر 2025":
     st.markdown('<p class="program-header">📁 التسكين علي الكادر 2025</p>', unsafe_allow_html=True)
-    display_batch_stats_and_table(df_cader2025, "التسكين علي الكادر 2025", has_specs=True, spec_keyword="التخصص علي الكادر")
+    display_batch_stats_and_table(df_cader2025, "التسكين علي الكادر 2025", "cader_2025.csv", has_specs=True, spec_keyword="التخصص علي الكادر")
 
 # 8. عرض قسم "التسكين علي الكادر 2026"
 elif selected_option == "📁 التسكين علي الكادر 2026":
     st.markdown('<p class="program-header">📁 التسكين علي الكادر 2026</p>', unsafe_allow_html=True)
-    display_batch_stats_and_table(df_cader2026, "التسكين علي الكادر 2026", has_specs=True, spec_keyword="التخصص علي الكادر")
+    display_batch_stats_and_table(df_cader2026, "التسكين علي الكادر 2026", "cader_2026.csv", has_specs=True, spec_keyword="التخصص علي الكادر")
 
 elif selected_option == "📁 قرار 160":
     st.markdown('<p class="program-header">📁 إعادة التعيين (قرار 160)</p>', unsafe_allow_html=True)
-    display_batch_stats_and_table(df_reassign, "إعادة التعيين (قرار 160)", has_specs=True, spec_keyword="التخصص علي الكادر")
+    display_batch_stats_and_table(df_reassign, "إعادة التعيين (قرار 160)", "decision_160.csv", has_specs=True, spec_keyword="التخصص علي الكادر")
 
 elif selected_option == "📁 ملفات معلم مساعد الدفعة 1":
     st.markdown('<p class="program-header">📁 ملفات معلم مساعد الدفعة الأولى</p>', unsafe_allow_html=True)
-    display_batch_stats_and_table(df_batch1, "معلم مساعد الدفعة الأولى", has_specs=True, spec_keyword="التخصص علي الكادر")
+    display_batch_stats_and_table(df_batch1, "معلم مساعد الدفعة الأولى", "batch_1.csv", has_specs=True, spec_keyword="التخصص علي الكادر")
 
 elif selected_option == "📁 ملفات معلم مساعد الدفعة 2":
     st.markdown('<p class="program-header">📁 ملفات معلم مساعد الدفعة الثانية</p>', unsafe_allow_html=True)
-    display_batch_stats_and_table(df_batch2, "معلم مساعد الدفعة الثانية", has_specs=True, spec_keyword="التخصص علي الكادر")
+    display_batch_stats_and_table(df_batch2, "معلم مساعد الدفعة الثانية", "batch_2.csv", has_specs=True, spec_keyword="التخصص علي الكادر")
 
 elif selected_option == "📁 منصة الوزارة CPD":
     st.markdown('<p class="program-header">📊 إحصائيات نتيجة منصة CPD حتي 12-5-2026</p>', unsafe_allow_html=True)
@@ -685,9 +700,8 @@ elif selected_option == "📁 منصة الوزارة CPD":
             ddf = df_cpd[mask]
             st.info(f"عدد النتائج المطابقة للبحث: {len(ddf)}")
         
-        csv_data = ddf.to_csv(index=False).encode('utf-8-sig')
-        st.download_button("📥 تصدير النتائج الحالية لملف CSV", data=csv_data, file_name="cpd_export.csv", mime="text/csv")
         st.dataframe(ddf, use_container_width=True)
+        render_secure_download_button(df_cpd, "منصة الوزارة CPD", "cpd_data.csv")
     else:
         st.error("ملف منصة الوزارة CPD غير متوفر.")
 
